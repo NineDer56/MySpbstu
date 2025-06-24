@@ -5,5 +5,4 @@ data class Group(
     private val name : String,
     private val level : Int,
     private val faculty: Faculty
-) {
-}
+)

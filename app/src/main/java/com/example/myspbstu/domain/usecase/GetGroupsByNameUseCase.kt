@@ -6,7 +6,7 @@ import com.example.myspbstu.domain.repository.ScheduleRepository
 class GetGroupsByNameUseCase(
     private val repository: ScheduleRepository
 ) {
-    operator fun invoke(name : String) : List<Group>{
+    suspend operator fun invoke(name : String) : List<Group>{
         return repository.getGroupsByName(name)
     }
 }

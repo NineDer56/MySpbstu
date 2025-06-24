@@ -4,5 +4,4 @@ data class Faculty(
     private val id : Int,
     private val name : String,
     private val abbr : String
-) {
-}
+)

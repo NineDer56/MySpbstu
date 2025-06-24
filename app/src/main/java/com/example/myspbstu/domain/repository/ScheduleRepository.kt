@@ -5,7 +5,7 @@ import com.example.myspbstu.domain.model.Schedule
 
 interface ScheduleRepository {
 
-    fun getGroupsByName(name : String) : List<Group>
+    suspend fun getGroupsByName(name : String) : List<Group>
 
-    fun getScheduleByGroupId(groupId : Int, date : String) : Schedule
+    suspend fun getScheduleByGroupId(groupId : Int, date : String) : Schedule
 }
