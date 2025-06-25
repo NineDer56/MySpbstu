@@ -1,7 +1,7 @@
 package com.example.myspbstu.domain.model
 
 data class Day(
-    private val weekday : Int,
-    private val date : String,
-    private val lessons : List<Lesson>
+    val weekday : Int,
+    val date : String,
+    val lessons : List<Lesson>
 )

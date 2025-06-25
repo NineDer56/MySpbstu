@@ -17,30 +17,14 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        val binding = ActivityMainBinding.inflate(layoutInflater)
-
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(binding.root)
+        setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        val coroutineScope = CoroutineScope(Dispatchers.IO)
-        val rep = ScheduleRepositoryImpl()
-        val getScheduleByGroupIdUseCase = GetScheduleByGroupIdUseCase(rep)
-        val getGroupsByNameUseCase = GetGroupsByNameUseCase(rep)
 
-        binding.btnTest.setOnClickListener {
-            coroutineScope.launch {
-                val groups = getGroupsByNameUseCase("5130903")
-                Log.d("MainActivity", groups.toString())
-            }
-
-        }
     }
-
-
 }

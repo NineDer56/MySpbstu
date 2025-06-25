@@ -5,21 +5,55 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
+import androidx.lifecycle.ViewModelProvider
+import com.example.myspbstu.databinding.FragmentChooseGroupBinding
+import com.example.myspbstu.presentation.adapter.GroupsAdapter
+import com.example.myspbstu.presentation.viewmodel.ChooseGroupViewModel
 
 class ChooseGroupFragment : Fragment() {
 
+    private var _binding : FragmentChooseGroupBinding? = null
+    private val binding : FragmentChooseGroupBinding
+        get() = _binding ?: throw RuntimeException("FragmentChooseGroupBinding is null")
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    private val viewModel : ChooseGroupViewModel by lazy {
+        ViewModelProvider(this)[ChooseGroupViewModel::class.java]
+    }
 
+    private val groupsAdapter : GroupsAdapter by lazy {
+        GroupsAdapter()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_choose_group, container, false)
+    ): View {
+        _binding = FragmentChooseGroupBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.rvGroups.adapter = groupsAdapter
+
+        binding.btnFindGroups.setOnClickListener {
+            val groupName = binding.editTextGroupNum.text.toString()
+            viewModel.getGroupsByName(groupName)
+        }
+
+        observeLiveData()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    private fun observeLiveData(){
+        viewModel.groups.observe(viewLifecycleOwner){
+            groupsAdapter.submitList(it)
+        }
     }
 
     companion object {

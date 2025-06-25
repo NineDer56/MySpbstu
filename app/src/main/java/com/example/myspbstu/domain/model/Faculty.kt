@@ -1,7 +1,7 @@
 package com.example.myspbstu.domain.model
 
 data class Faculty(
-    private val id : Int,
-    private val name : String,
-    private val abbr : String
+    val id : Int,
+    val name : String,
+    val abbr : String
 )
