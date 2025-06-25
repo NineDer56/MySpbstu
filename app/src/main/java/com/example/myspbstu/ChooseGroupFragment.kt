@@ -6,7 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
 import com.example.myspbstu.databinding.FragmentChooseGroupBinding
+import com.example.myspbstu.domain.model.Group
 import com.example.myspbstu.presentation.adapter.GroupsAdapter
 import com.example.myspbstu.presentation.viewmodel.ChooseGroupViewModel
 
@@ -24,6 +27,10 @@ class ChooseGroupFragment : Fragment() {
         GroupsAdapter()
     }
 
+    private val navController : NavController by lazy {
+        findNavController()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -35,11 +42,21 @@ class ChooseGroupFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.rvGroups.adapter = groupsAdapter
+        groupsAdapter.onGroupClickListener = object : GroupsAdapter.OnGroupClickListener{
+            override fun onGroupClick(group: Group) {
+                navController.navigate(
+                    ChooseGroupFragmentDirections
+                        .actionChooseGroupFragmentToScheduleFragment(group.id)
+                )
+            }
+        }
 
-        binding.btnFindGroups.setOnClickListener {
-            val groupName = binding.editTextGroupNum.text.toString()
-            viewModel.getGroupsByName(groupName)
+        with(binding){
+            rvGroups.adapter = groupsAdapter
+            btnFindGroups.setOnClickListener {
+                val groupName = editTextGroupNum.text.toString()
+                viewModel.getGroupsByName(groupName)
+            }
         }
 
         observeLiveData()

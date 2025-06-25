@@ -18,9 +18,10 @@
         android:id="@+id/scheduleFragment"
         android:name="com.example.myspbstu.ScheduleFragment"
         android:label="fragment_schedule"
-        tools:layout="@layout/fragment_schedule" />
-    <argument
-        android:name="groupId"
-        android:defaultValue="0"
-        app:argType="integer" />
+        tools:layout="@layout/fragment_schedule" >
+        <argument
+            android:name="groupId"
+            android:defaultValue="0"
+            app:argType="integer" />
+    </fragment>
 </navigation>
