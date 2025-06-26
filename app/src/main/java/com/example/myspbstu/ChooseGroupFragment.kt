@@ -51,6 +51,8 @@ class ChooseGroupFragment : Fragment() {
             }
         }
 
+        observeLiveData()
+
         with(binding){
             rvGroups.adapter = groupsAdapter
             btnFindGroups.setOnClickListener {
@@ -59,7 +61,7 @@ class ChooseGroupFragment : Fragment() {
             }
         }
 
-        observeLiveData()
+
     }
 
     override fun onDestroyView() {

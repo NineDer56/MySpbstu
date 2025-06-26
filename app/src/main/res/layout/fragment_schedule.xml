@@ -6,13 +6,49 @@
     android:layout_height="match_parent"
     tools:context=".ScheduleFragment">
 
+    <LinearLayout
+        android:id="@+id/ll_week"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/week_day_item_style"
+            android:text="ПН"/>
+
+        <TextView
+            style="@style/week_day_item_style"
+            android:text="ВТ"/>
+        <TextView
+            style="@style/week_day_item_style"
+            android:text="СР"/>
+        <TextView
+            style="@style/week_day_item_style"
+            android:text="ЧТ"/>
+        <TextView
+            style="@style/week_day_item_style"
+            android:text="ПТ"/>
+        <TextView
+            style="@style/week_day_item_style"
+            android:text="СБ"/>
+        <TextView
+            style="@style/week_day_item_style"
+            android:text="ВС"/>
+
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_week"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_week"
         tools:itemCount="1"
         tools:listitem="@layout/week_item" />
 
@@ -23,6 +59,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/rv_week"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/schedule_item"
         tools:itemCount="2"/>
 

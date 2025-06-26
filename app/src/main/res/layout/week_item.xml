@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardBackgroundColor="@color/dark_gray"
     android:layout_margin="8dp"
+    app:cardBackgroundColor="@color/dark_gray"
 
     app:cardCornerRadius="12dp"
     app:cardUseCompatPadding="true">
@@ -16,68 +16,48 @@
         android:gravity="center"
         android:orientation="horizontal">
 
-        <androidx.cardview.widget.CardView style="@style/day_item_card_style">
 
-            <TextView
-                style="@style/day_item_style"
-                tools:text="23\nПН" />
-
-
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView style="@style/day_item_card_style">
-
-            <TextView
-                style="@style/day_item_style"
-                tools:text="24\nВТ" />
+        <TextView
+            android:id="@+id/tv_day1"
+            style="@style/day_item_style1"
+            tools:text="23" />
 
 
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView style="@style/day_item_card_style">
-
-            <TextView
-                style="@style/day_item_style"
-                tools:text="25\nСР" />
+        <TextView
+            android:id="@+id/tv_day2"
+            style="@style/day_item_style1"
+            tools:text="24" />
 
 
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView style="@style/day_item_card_style">
-
-            <TextView
-                style="@style/day_item_style"
-                tools:text="26\nЧТ" />
+        <TextView
+            android:id="@+id/tv_day3"
+            style="@style/day_item_style1"
+            tools:text="25" />
 
 
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView style="@style/day_item_card_style">
-
-            <TextView
-                style="@style/day_item_style"
-                tools:text="27\nПТ" />
+        <TextView
+            android:id="@+id/tv_day4"
+            style="@style/day_item_style1"
+            tools:text="26" />
 
 
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView style="@style/day_item_card_style">
-
-            <TextView
-                style="@style/day_item_style"
-                tools:text="28\nСБ" />
+        <TextView
+            android:id="@+id/tv_day5"
+            style="@style/day_item_style1"
+            tools:text="27" />
 
 
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView style="@style/day_item_card_style">
-
-            <TextView
-                style="@style/day_item_style"
-                tools:text="29\nВС" />
+        <TextView
+            android:id="@+id/tv_day6"
+            style="@style/day_item_style1"
+            tools:text="28" />
 
 
-        </androidx.cardview.widget.CardView>
+        <TextView
+            android:id="@+id/tv_day7"
+            style="@style/day_item_style1"
+            tools:text="29" />
+
 
     </LinearLayout>
 
