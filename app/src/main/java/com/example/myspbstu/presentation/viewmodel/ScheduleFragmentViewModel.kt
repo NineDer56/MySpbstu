@@ -1,6 +1,7 @@
 package com.example.myspbstu.presentation.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -8,7 +9,6 @@ import com.example.myspbstu.data.retrofit.repository.ScheduleRepositoryImpl
 import com.example.myspbstu.domain.model.Lesson
 import com.example.myspbstu.domain.model.Schedule
 import com.example.myspbstu.domain.usecase.GetScheduleByGroupIdUseCase
-import com.example.myspbstu.presentation.adapter.ScheduleWithOffset
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -17,6 +17,8 @@ import java.util.Locale
 class ScheduleFragmentViewModel(
     application: Application
 ) : AndroidViewModel(application) {
+
+    var initialScrollDone = false
 
     private var _lessons = MutableLiveData<List<Lesson>>()
     val lessons: LiveData<List<Lesson>> get() = _lessons
@@ -84,8 +86,15 @@ class ScheduleFragmentViewModel(
         val date = scheduleList[position].schedule.week.dateStart
         _currentYear.value = getFormattedYear(date)
         _currentMonth.value = getFormattedMonth(date)
-
     }
+
+    fun updateLessons(day: Int, schedulePosition: Int) {
+        Log.d("MyDebug", "updateLessons day $day schedulePosition $schedulePosition")
+        val schedule = scheduleList.getOrNull(schedulePosition)?.schedule ?: return
+        val lessonsForDay = schedule.days.find { it.weekday == day } ?.lessons ?: emptyList()
+        _lessons.value = lessonsForDay
+    }
+
 
     fun setCurrentOffset(offset: Int) {
         currentWeekOffset = offset

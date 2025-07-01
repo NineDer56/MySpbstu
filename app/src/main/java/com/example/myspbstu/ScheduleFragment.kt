@@ -43,6 +43,8 @@ class ScheduleFragment : Fragment() {
         args.groupId
     }
 
+    private val snapHelper by lazy { PagerSnapHelper() }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -61,8 +63,18 @@ class ScheduleFragment : Fragment() {
             LinearLayoutManager.HORIZONTAL,
             false
         )
+
+
+        scheduleAdapter.onDayClickListener = object : ScheduleAdapter.OnDayClickListener {
+            override fun onDayClicked(day: Int, position: Int) {
+                viewModel.updateLessons(day, position)
+            }
+        }
+
+
         binding.rvWeek.adapter = scheduleAdapter
-        PagerSnapHelper().attachToRecyclerView(binding.rvWeek)
+        snapHelper.attachToRecyclerView(binding.rvWeek)
+
 
         binding.rvWeek.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -70,13 +82,13 @@ class ScheduleFragment : Fragment() {
                 if (newState != RecyclerView.SCROLL_STATE_IDLE) return
 
                 val layoutManager = recyclerView.layoutManager as? LinearLayoutManager ?: return
+                val snapView = snapHelper.findSnapView(layoutManager) ?: return
+                val position = layoutManager.getPosition(snapView)
 
-                val position = layoutManager.findFirstCompletelyVisibleItemPosition()
                 if (position == RecyclerView.NO_POSITION) return
 
                 val offset = viewModel.getOffsetByPosition(position)
                 viewModel.setCurrentOffset(offset)
-
                 viewModel.updateYearAndMonthByPosition(position)
 
                 viewLifecycleOwner.lifecycleScope.launch {
@@ -88,15 +100,19 @@ class ScheduleFragment : Fragment() {
                     }
                 }
             }
-
         })
+
+
 
 
         observeLiveData()
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.loadInitial(groupId)
-            binding.rvWeek.scrollToPosition(1)
+            if(!viewModel.initialScrollDone){
+                binding.rvWeek.scrollToPosition(1)
+                viewModel.initialScrollDone = true
+            }
         }
 
     }
@@ -109,10 +125,10 @@ class ScheduleFragment : Fragment() {
             scheduleAdapter.submitList(it)
             Log.d("MyDebug", "observeLiveData: list updated")
         }
-        viewModel.currentYear.observe(viewLifecycleOwner){
+        viewModel.currentYear.observe(viewLifecycleOwner) {
             binding.tvYear.text = it
         }
-        viewModel.currentMonth.observe(viewLifecycleOwner){
+        viewModel.currentMonth.observe(viewLifecycleOwner) {
             binding.tvMonth.text = it
         }
     }

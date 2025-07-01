@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myspbstu.R
@@ -14,6 +15,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class ScheduleAdapter : ListAdapter<Schedule, ScheduleAdapter.ScheduleViewHolder>(ScheduleDiffCallback()) {
+
+    var onDayClickListener : OnDayClickListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScheduleViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
@@ -29,13 +32,22 @@ class ScheduleAdapter : ListAdapter<Schedule, ScheduleAdapter.ScheduleViewHolder
         val daysOfWeek = getFormattedWeekDays(schedule.week.dateStart, schedule.week.dateEnd)
         Log.d("MyDebug", "onBindViewHolder: position $position")
 
-        holder.tvDay1.text = daysOfWeek[0]
-        holder.tvDay2.text = daysOfWeek[1]
-        holder.tvDay3.text = daysOfWeek[2]
-        holder.tvDay4.text = daysOfWeek[3]
-        holder.tvDay5.text = daysOfWeek[4]
-        holder.tvDay6.text = daysOfWeek[5]
-        holder.tvDay7.text = daysOfWeek[6]
+        val dayViews = listOf(
+            holder.tvDay1,
+            holder.tvDay2,
+            holder.tvDay3,
+            holder.tvDay4,
+            holder.tvDay5,
+            holder.tvDay6,
+            holder.tvDay7
+        )
+
+        for (i in dayViews.indices) {
+            dayViews[i].text = daysOfWeek[i]
+            dayViews[i].setOnClickListener {
+                onDayClickListener?.onDayClicked(i + 1, holder.adapterPosition)
+            }
+        }
     }
 
 
@@ -65,5 +77,10 @@ class ScheduleAdapter : ListAdapter<Schedule, ScheduleAdapter.ScheduleViewHolder
         val tvDay6 = itemView.findViewById<TextView>(R.id.tv_day6)
         val tvDay7 = itemView.findViewById<TextView>(R.id.tv_day7)
     }
+
+    interface OnDayClickListener {
+        fun onDayClicked(day: Int, position: Int)
+    }
+
 
 }
