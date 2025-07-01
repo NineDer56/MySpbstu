@@ -10,55 +10,77 @@
     app:cardCornerRadius="12dp"
     app:cardUseCompatPadding="true">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_week"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal">
-
+        android:layout_margin="8dp"
+        android:gravity="center">
 
         <TextView
             android:id="@+id/tv_day1"
             style="@style/day_item_style1"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day2"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="23" />
-
 
         <TextView
             android:id="@+id/tv_day2"
             style="@style/day_item_style1"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day3"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day1"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="24" />
-
 
         <TextView
             android:id="@+id/tv_day3"
             style="@style/day_item_style1"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day4"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day2"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="25" />
-
 
         <TextView
             android:id="@+id/tv_day4"
             style="@style/day_item_style1"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day5"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day3"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="26" />
-
 
         <TextView
             android:id="@+id/tv_day5"
             style="@style/day_item_style1"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day6"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day4"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="27" />
-
 
         <TextView
             android:id="@+id/tv_day6"
             style="@style/day_item_style1"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day7"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day5"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="28" />
-
 
         <TextView
             android:id="@+id/tv_day7"
             style="@style/day_item_style1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day6"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="29" />
 
-
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>

@@ -1,5 +1,6 @@
 package com.example.myspbstu.presentation.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +27,7 @@ class ScheduleAdapter : ListAdapter<Schedule, ScheduleAdapter.ScheduleViewHolder
     override fun onBindViewHolder(holder: ScheduleViewHolder, position: Int) {
         val schedule = getItem(position)
         val daysOfWeek = getFormattedWeekDays(schedule.week.dateStart, schedule.week.dateEnd)
+        Log.d("MyDebug", "onBindViewHolder: position $position")
 
         holder.tvDay1.text = daysOfWeek[0]
         holder.tvDay2.text = daysOfWeek[1]
@@ -37,9 +39,10 @@ class ScheduleAdapter : ListAdapter<Schedule, ScheduleAdapter.ScheduleViewHolder
     }
 
 
+
     private fun getFormattedWeekDays(start: String, end: String): List<String> {
         val inputFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
-        val outputFormatter = DateTimeFormatter.ofPattern("dd\nEEE", Locale("ru"))
+        val outputFormatter = DateTimeFormatter.ofPattern("dd", Locale("ru"))
 
         val startDate = LocalDate.parse(start, inputFormatter)
         val endDate = LocalDate.parse(end, inputFormatter)
