@@ -14,6 +14,9 @@ import java.util.Formatter
 import java.util.Locale
 
 class WeeksAdapter : RecyclerView.Adapter<WeeksAdapter.WeekViewHolder>() {
+
+    var onWeekdayClickListener : OnWeekdayClickListener? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeeksAdapter.WeekViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
             R.layout.week_item,
@@ -32,7 +35,13 @@ class WeeksAdapter : RecyclerView.Adapter<WeeksAdapter.WeekViewHolder>() {
 
         for((index, dayView) in holder.dayViews.withIndex()){
             dayView.text = weekDates[index].dayOfMonth.toString()
+
+            dayView.setOnClickListener {
+                onWeekdayClickListener?.onWeekdayClick(index)
+            }
         }
+
+
     }
 
     override fun getItemCount(): Int {
@@ -55,6 +64,7 @@ class WeeksAdapter : RecyclerView.Adapter<WeeksAdapter.WeekViewHolder>() {
     companion object {
         const val START_POSITION = Int.MAX_VALUE / 2
 
+        // TODO оптимизировать
         fun getYearByPosition(position: Int) : String{
             val weekOffset = position - START_POSITION
             val monday = LocalDate.now()
@@ -74,5 +84,17 @@ class WeeksAdapter : RecyclerView.Adapter<WeeksAdapter.WeekViewHolder>() {
 
             return month.toString().replaceFirstChar { it.titlecaseChar() }
         }
+
+        fun getDateByPosition(position: Int) : String{
+            val weekOffset = position - START_POSITION
+            val monday = LocalDate.now()
+                .with(DayOfWeek.MONDAY)
+                .plusWeeks(weekOffset.toLong())
+            return monday.toString()
+        }
+    }
+
+    interface OnWeekdayClickListener{
+        fun onWeekdayClick(dayOfWeek : Int)
     }
 }

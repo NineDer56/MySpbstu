@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import com.example.myspbstu.databinding.FragmentScheduleBinding
+import com.example.myspbstu.domain.model.Day
 import com.example.myspbstu.presentation.adapter.LessonsAdapter
 import com.example.myspbstu.presentation.adapter.WeeksAdapter
 import com.example.myspbstu.presentation.viewmodel.ScheduleFragmentViewModel
@@ -44,6 +45,8 @@ class ScheduleFragment : Fragment() {
 
     private val snapHelper by lazy { PagerSnapHelper() }
 
+    private var currentDays : List<Day>? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -69,17 +72,30 @@ class ScheduleFragment : Fragment() {
 
         observeLiveData()
         viewModel.loadMonthAndYear(WeeksAdapter.START_POSITION)
+        viewModel.loadScheduleByPositionAndGroupId(WeeksAdapter.START_POSITION, groupId)
 
         val layoutManager = binding.rvWeek.layoutManager as LinearLayoutManager
 
         binding.rvWeek.addOnScrollListener(object : OnScrollListener() {
-
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                val firstVisiblePosition = layoutManager.findFirstVisibleItemPosition()
-                viewModel.loadMonthAndYear(firstVisiblePosition)
+                if(newState == RecyclerView.SCROLL_STATE_IDLE){
+                    val firstVisiblePosition = layoutManager.findFirstVisibleItemPosition()
+
+                    //очистка при скролле
+                    viewModel.clearLessons()
+                    viewModel.onWeekScrolled(firstVisiblePosition, groupId)
+                }
+
             }
         })
+
+        weeksAdapter.onWeekdayClickListener = object : WeeksAdapter.OnWeekdayClickListener{
+            override fun onWeekdayClick(dayOfWeek: Int) {
+                viewModel.onDaySelected(dayOfWeek)
+            }
+        }
+
     }
 
     private fun observeLiveData() {
@@ -91,6 +107,9 @@ class ScheduleFragment : Fragment() {
         }
         viewModel.currentMonth.observe(viewLifecycleOwner){
             binding.tvMonth.text = it
+        }
+        viewModel.days.observe(viewLifecycleOwner){
+            currentDays = it
         }
     }
 
