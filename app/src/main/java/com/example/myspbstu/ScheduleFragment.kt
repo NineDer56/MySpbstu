@@ -84,6 +84,8 @@ class ScheduleFragment : Fragment() {
 
                     //очистка при скролле
                     viewModel.clearLessons()
+                    weeksAdapter.selectedDayIndex = Pair(-1, -1)
+
                     viewModel.onWeekScrolled(firstVisiblePosition, groupId)
                 }
 
@@ -92,7 +94,10 @@ class ScheduleFragment : Fragment() {
 
         weeksAdapter.onWeekdayClickListener = object : WeeksAdapter.OnWeekdayClickListener{
             override fun onWeekdayClick(dayOfWeek: Int) {
+                val position = layoutManager.findFirstVisibleItemPosition()
+
                 viewModel.onDaySelected(dayOfWeek)
+                weeksAdapter.selectedDayIndex = Pair(position, dayOfWeek)
             }
         }
 
@@ -101,6 +106,7 @@ class ScheduleFragment : Fragment() {
     private fun observeLiveData() {
         viewModel.lessons.observe(viewLifecycleOwner) {
             lessonsAdapter.submitList(it)
+            showNoLessonsText(it.isEmpty())
         }
         viewModel.currentYear.observe(viewLifecycleOwner){
             binding.tvYear.text = it
@@ -110,6 +116,14 @@ class ScheduleFragment : Fragment() {
         }
         viewModel.days.observe(viewLifecycleOwner){
             currentDays = it
+        }
+    }
+
+    private fun showNoLessonsText(isEmpty : Boolean){
+        if(isEmpty){
+            binding.tvNoLessons.visibility = View.VISIBLE
+        } else {
+            binding.tvNoLessons.visibility = View.GONE
         }
     }
 

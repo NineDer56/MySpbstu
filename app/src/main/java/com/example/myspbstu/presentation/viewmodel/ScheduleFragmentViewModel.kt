@@ -11,17 +11,11 @@ import com.example.myspbstu.domain.model.Day
 import com.example.myspbstu.domain.model.Lesson
 import com.example.myspbstu.domain.usecase.GetScheduleByGroupIdUseCase
 import com.example.myspbstu.presentation.adapter.WeeksAdapter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class ScheduleFragmentViewModel(
     application: Application
 ) : AndroidViewModel(application) {
-
-    var initialScrollDone = false
 
     private var _lessons = MutableLiveData<List<Lesson>>()
     val lessons: LiveData<List<Lesson>> get() = _lessons
@@ -37,6 +31,7 @@ class ScheduleFragmentViewModel(
     private var _currentMonth = MutableLiveData<String>()
     val currentMonth : LiveData<String>
         get() = _currentMonth
+
 
 
     private val repository = ScheduleRepositoryImpl()
