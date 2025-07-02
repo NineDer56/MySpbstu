@@ -1,6 +1,7 @@
 package com.example.myspbstu
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,8 +10,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import com.example.myspbstu.databinding.FragmentScheduleBinding
 import com.example.myspbstu.presentation.adapter.LessonsAdapter
+import com.example.myspbstu.presentation.adapter.WeeksAdapter
 import com.example.myspbstu.presentation.viewmodel.ScheduleFragmentViewModel
 
 
@@ -24,6 +28,10 @@ class ScheduleFragment : Fragment() {
 
     private val lessonsAdapter by lazy {
         LessonsAdapter()
+    }
+
+    private val weeksAdapter by lazy {
+        WeeksAdapter()
     }
 
     private val viewModel by lazy {
@@ -48,20 +56,41 @@ class ScheduleFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.rvSchedule.adapter = lessonsAdapter
+        binding.rvWeek.adapter = weeksAdapter
 
-//        binding.rvWeek.layoutManager = LinearLayoutManager(
-//            requireContext(),
-//            LinearLayoutManager.HORIZONTAL,
-//            false
-//        )
+        binding.rvWeek.layoutManager = LinearLayoutManager(
+            requireContext(),
+            LinearLayoutManager.HORIZONTAL,
+            false
+        )
 
+        snapHelper.attachToRecyclerView(binding.rvWeek)
+        binding.rvWeek.scrollToPosition(WeeksAdapter.START_POSITION)
 
         observeLiveData()
+        viewModel.loadMonthAndYear(WeeksAdapter.START_POSITION)
+
+        val layoutManager = binding.rvWeek.layoutManager as LinearLayoutManager
+
+        binding.rvWeek.addOnScrollListener(object : OnScrollListener() {
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                val firstVisiblePosition = layoutManager.findFirstVisibleItemPosition()
+                viewModel.loadMonthAndYear(firstVisiblePosition)
+            }
+        })
     }
 
     private fun observeLiveData() {
         viewModel.lessons.observe(viewLifecycleOwner) {
             lessonsAdapter.submitList(it)
+        }
+        viewModel.currentYear.observe(viewLifecycleOwner){
+            binding.tvYear.text = it
+        }
+        viewModel.currentMonth.observe(viewLifecycleOwner){
+            binding.tvMonth.text = it
         }
     }
 
