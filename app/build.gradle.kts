@@ -61,4 +61,7 @@ dependencies {
     // Jetpack navigation
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+
+    // Work manager
+    implementation(libs.androidx.work.runtime.ktx)
 }

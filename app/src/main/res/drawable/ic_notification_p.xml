@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Левая вертикальная черта -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M6,6h2v14h-2z" />
+
+    <!-- Верхняя горизонтальная перемычка -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M6,6h12v2h-12z" />
+
+    <!-- Правая вертикальная черта -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16,6h2v14h-2z" />
+</vector>

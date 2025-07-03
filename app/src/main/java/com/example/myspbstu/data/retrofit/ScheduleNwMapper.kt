@@ -62,7 +62,7 @@ class ScheduleNwMapper {
         return LessonType(
             id = nwModel.id,
             name = nwModel.name,
-            abbr = nwModel.name
+            abbr = nwModel.abbr
         )
     }
 

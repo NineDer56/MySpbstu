@@ -1,17 +1,28 @@
 package com.example.myspbstu.presentation.viewmodel
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
+import androidx.work.WorkManager
 import com.example.myspbstu.data.retrofit.repository.ScheduleRepositoryImpl
 import com.example.myspbstu.domain.model.Day
 import com.example.myspbstu.domain.model.Lesson
 import com.example.myspbstu.domain.usecase.GetScheduleByGroupIdUseCase
 import com.example.myspbstu.presentation.adapter.WeeksAdapter
+import com.example.myspbstu.presentation.worker.ExamWorker
+import com.example.myspbstu.presentation.worker.ExamWorker.Companion.CHANNEL_ID
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class ScheduleFragmentViewModel(
     application: Application
@@ -32,7 +43,8 @@ class ScheduleFragmentViewModel(
     val currentMonth : LiveData<String>
         get() = _currentMonth
 
-
+    private val importantLessonTypes = listOf("Экз", "Зч", "ЗаО")
+    private var isNotificationChannelCreated = false
 
     private val repository = ScheduleRepositoryImpl()
     private val getScheduleByGroupIdUseCase = GetScheduleByGroupIdUseCase(repository)
@@ -44,7 +56,76 @@ class ScheduleFragmentViewModel(
             Log.d("MyDebug", "position $position, id $groupId, date $date")
             val schedule = getScheduleByGroupIdUseCase(groupId, date)
             _days.postValue(schedule.days)
+
+            checkForNotifications(schedule.days)
         }
+    }
+
+    private fun checkForNotifications(days : List<Day>){
+        for(day in days){
+            val date = day.date
+            for(lesson in day.lessons){
+                Log.d("MyDebug", "${lesson.lessonType.abbr}, list: $importantLessonTypes")
+                if(lesson.lessonType.abbr in importantLessonTypes){
+                    makeNotification(lesson, date)
+                    Log.d("MyDebug", "notif: lesson $lesson, date $date")
+                }
+            }
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Exam Notifications"
+            val descriptionText = "Уведомления о важной учёбе"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+
+            val notificationManager = application.applicationContext.getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun makeNotification(lesson: Lesson, date : String){
+        val typeOfExam = lesson.lessonType.name
+        val subject = lesson.subject
+        val time = lesson.timeStart
+
+        val splitDate = date.split("-")
+        val year = splitDate[0].toInt()
+        val month = splitDate[1].toInt()
+        val day = splitDate[2].toInt()
+
+        val splitTime = time.split(":")
+        val hour = splitTime[0].toInt()
+        val minute = splitTime[1].toInt()
+
+        val examDate = LocalDateTime.of(year, month, day, hour, minute).toInstant(ZoneOffset.UTC).toEpochMilli()
+        val now = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
+        Log.d("MyDebug", "$examDate, now: $now")
+//        if(examDate < now)
+//            return
+
+        //val delay = examDate - now - (24 * 60 * 60 * 1000)
+        val delay = 10_000
+        if (delay <= 0)
+            return
+
+        val name = "$typeOfExam/$subject/$time"
+
+        if(!isNotificationChannelCreated){
+            createNotificationChannel()
+            isNotificationChannelCreated = true
+        }
+
+        val workManager = WorkManager.getInstance(application.applicationContext)
+        workManager.enqueueUniqueWork(
+            name,
+            ExistingWorkPolicy.REPLACE,
+            ExamWorker.makeRequest(typeOfExam, subject, time, delay.toLong())
+        )
     }
 
     fun clearLessons(){
