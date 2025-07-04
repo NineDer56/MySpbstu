@@ -1,9 +1,6 @@
 package com.example.myspbstu.presentation.viewmodel
 
 import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.os.Build
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -18,11 +15,11 @@ import com.example.myspbstu.domain.model.Lesson
 import com.example.myspbstu.domain.usecase.GetScheduleByGroupIdUseCase
 import com.example.myspbstu.presentation.adapter.WeeksAdapter
 import com.example.myspbstu.presentation.worker.ExamWorker
-import com.example.myspbstu.presentation.worker.ExamWorker.Companion.CHANNEL_ID
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 class ScheduleFragmentViewModel(
     application: Application
@@ -43,6 +40,10 @@ class ScheduleFragmentViewModel(
     val currentMonth : LiveData<String>
         get() = _currentMonth
 
+    private var _currentDay = MutableLiveData<String>()
+    val currentDay : LiveData<String>
+        get() = _currentDay
+
     private val importantLessonTypes = listOf("Экз", "Зч", "ЗаО")
 
 
@@ -50,7 +51,7 @@ class ScheduleFragmentViewModel(
     private val getScheduleByGroupIdUseCase = GetScheduleByGroupIdUseCase(repository)
 
     fun loadScheduleByPositionAndGroupId(position: Int, groupId : Int){
-        val date = WeeksAdapter.getDateByPosition(position)
+        val date = WeeksAdapter.getDateOfMondayByPosition(position).toString()
 
         viewModelScope.launch{
             Log.d("MyDebug", "position $position, id $groupId, date $date")
@@ -120,9 +121,14 @@ class ScheduleFragmentViewModel(
         loadScheduleByPositionAndGroupId(position, groupId)
     }
 
-    fun onDaySelected(dayOfWeek: Int){
+    fun onDaySelected(position : Int, dayOfWeek: Int){
         val curLessons = days.value?.find { it.weekday == dayOfWeek + 1 }?.lessons
         _lessons.value = curLessons.orEmpty()
+
+        val date = WeeksAdapter.getDateOfMondayByPosition(position)
+        val newDate = date.plusDays(dayOfWeek.toLong())
+        val formatter = DateTimeFormatter.ofPattern("dd LLLL")
+        _currentDay.value = newDate.format(formatter).toString()
     }
 
     fun loadMonthAndYear(position: Int){

@@ -102,12 +102,12 @@ class WeeksAdapter : RecyclerView.Adapter<WeeksAdapter.WeekViewHolder>() {
             return month.toString().replaceFirstChar { it.titlecaseChar() }
         }
 
-        fun getDateByPosition(position: Int): String {
+        fun getDateOfMondayByPosition(position: Int): LocalDate {
             val weekOffset = position - START_POSITION
             val monday = LocalDate.now()
                 .with(DayOfWeek.MONDAY)
                 .plusWeeks(weekOffset.toLong())
-            return monday.toString()
+            return monday
         }
     }
 

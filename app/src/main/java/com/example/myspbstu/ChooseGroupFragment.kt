@@ -35,16 +35,17 @@ class ChooseGroupFragment : Fragment() {
     }
 
     private val prefs by lazy {
-        requireActivity().getSharedPreferences(PREFS_GROUP_KEY, Context.MODE_PRIVATE)
+        requireActivity().getSharedPreferences(PREFS_GROUP_ID_KEY, Context.MODE_PRIVATE)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val groupId = prefs.getInt(PREFS_GROUP_KEY, -1)
-        if (groupId != -1) {
+        val groupId = prefs.getInt(PREFS_GROUP_ID_KEY, -1)
+        val groupName = prefs.getString(PREFS_GROUP_NAME_KEY, "") ?: ""
+        if (groupId != -1 && groupName != "") {
             navController.navigate(
                 ChooseGroupFragmentDirections
-                    .actionChooseGroupFragmentToScheduleFragment(groupId)
+                    .actionChooseGroupFragmentToScheduleFragment(groupId, groupName)
             )
         }
     }
@@ -62,11 +63,13 @@ class ChooseGroupFragment : Fragment() {
 
         groupsAdapter.onGroupClickListener = object : GroupsAdapter.OnGroupClickListener {
             override fun onGroupClick(group: Group) {
+                prefs.edit { putInt(PREFS_GROUP_ID_KEY, group.id).apply() }
+                prefs.edit { putString(PREFS_GROUP_NAME_KEY, group.name).apply() }
+
                 navController.navigate(
                     ChooseGroupFragmentDirections
-                        .actionChooseGroupFragmentToScheduleFragment(group.id)
+                        .actionChooseGroupFragmentToScheduleFragment(group.id, group.name)
                 )
-                prefs.edit { putInt(PREFS_GROUP_KEY, group.id).apply() }
             }
         }
 
@@ -95,7 +98,9 @@ class ChooseGroupFragment : Fragment() {
     }
 
     companion object {
-        private const val PREFS_GROUP_KEY = "sharedPreferencesGroupKey"
+        const val PREFS_GROUP_ID_KEY = "sharedPreferencesGroupIdKey"
+        const val PREFS_GROUP_NAME_KEY = "sharedPreferencesGroupNameKey"
+
     }
 
 }

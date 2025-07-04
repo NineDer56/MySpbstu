@@ -8,11 +8,16 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
@@ -28,6 +33,7 @@ import com.example.myspbstu.presentation.adapter.LessonsAdapter
 import com.example.myspbstu.presentation.adapter.WeeksAdapter
 import com.example.myspbstu.presentation.viewmodel.ScheduleFragmentViewModel
 import androidx.core.content.edit
+import androidx.navigation.fragment.findNavController
 
 
 class ScheduleFragment : Fragment() {
@@ -54,6 +60,10 @@ class ScheduleFragment : Fragment() {
         args.groupId
     }
 
+    private val groupName : String by lazy {
+        args.groupName
+    }
+
     private val prefs by lazy {
         requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
     }
@@ -65,6 +75,7 @@ class ScheduleFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestNotificationPermission()
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
@@ -77,6 +88,9 @@ class ScheduleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setToolBar()
+
+        binding.tvNoLessons.visibility = View.VISIBLE
 
         binding.rvSchedule.adapter = lessonsAdapter
         binding.rvWeek.adapter = weeksAdapter
@@ -107,6 +121,7 @@ class ScheduleFragment : Fragment() {
                     weeksAdapter.selectedDayIndex = Pair(-1, -1)
 
                     viewModel.onWeekScrolled(firstVisiblePosition, groupId)
+                    binding.tvToolBarDate.text = ""
                 }
 
             }
@@ -116,11 +131,28 @@ class ScheduleFragment : Fragment() {
             override fun onWeekdayClick(dayOfWeek: Int) {
                 val position = layoutManager.findFirstVisibleItemPosition()
 
-                viewModel.onDaySelected(dayOfWeek)
+                viewModel.onDaySelected(position, dayOfWeek)
                 weeksAdapter.selectedDayIndex = Pair(position, dayOfWeek)
             }
         }
 
+
+        binding.tvToolbarGroupName.text = "$groupName ↓"
+        binding.tvToolbarGroupName.setOnClickListener {
+            val popupMenu = PopupMenu(requireContext(), it)
+            popupMenu.menuInflater.inflate(R.menu.schedule_menu, popupMenu.menu)
+            popupMenu.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.findNewGroup -> {
+                        prefs.edit { putInt(ChooseGroupFragment.PREFS_GROUP_ID_KEY, -1) }
+                        findNavController().popBackStack()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popupMenu.show()
+        }
     }
 
     private fun observeLiveData() {
@@ -136,6 +168,9 @@ class ScheduleFragment : Fragment() {
         }
         viewModel.days.observe(viewLifecycleOwner) {
             currentDays = it
+        }
+        viewModel.currentDay.observe(viewLifecycleOwner){
+            binding.tvToolBarDate.text = it
         }
     }
 
@@ -235,6 +270,12 @@ class ScheduleFragment : Fragment() {
             }
             .create()
             .show()
+    }
+
+    private fun setToolBar() {
+        val toolbar = binding.toolbarSchedule
+        (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
+        (requireActivity() as AppCompatActivity).setTitle("")
     }
 
     companion object {
