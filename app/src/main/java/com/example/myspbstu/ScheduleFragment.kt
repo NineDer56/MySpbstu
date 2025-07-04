@@ -1,10 +1,20 @@
 package com.example.myspbstu
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
@@ -17,6 +27,7 @@ import com.example.myspbstu.domain.model.Day
 import com.example.myspbstu.presentation.adapter.LessonsAdapter
 import com.example.myspbstu.presentation.adapter.WeeksAdapter
 import com.example.myspbstu.presentation.viewmodel.ScheduleFragmentViewModel
+import androidx.core.content.edit
 
 
 class ScheduleFragment : Fragment() {
@@ -43,9 +54,18 @@ class ScheduleFragment : Fragment() {
         args.groupId
     }
 
+    private val prefs by lazy {
+        requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    }
+
     private val snapHelper by lazy { PagerSnapHelper() }
 
-    private var currentDays : List<Day>? = null
+    private var currentDays: List<Day>? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requestNotificationPermission()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -79,7 +99,7 @@ class ScheduleFragment : Fragment() {
         binding.rvWeek.addOnScrollListener(object : OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                if(newState == RecyclerView.SCROLL_STATE_IDLE){
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     val firstVisiblePosition = layoutManager.findFirstVisibleItemPosition()
 
                     //очистка при скролле
@@ -92,7 +112,7 @@ class ScheduleFragment : Fragment() {
             }
         })
 
-        weeksAdapter.onWeekdayClickListener = object : WeeksAdapter.OnWeekdayClickListener{
+        weeksAdapter.onWeekdayClickListener = object : WeeksAdapter.OnWeekdayClickListener {
             override fun onWeekdayClick(dayOfWeek: Int) {
                 val position = layoutManager.findFirstVisibleItemPosition()
 
@@ -108,19 +128,19 @@ class ScheduleFragment : Fragment() {
             lessonsAdapter.submitList(it)
             showNoLessonsText(it.isEmpty())
         }
-        viewModel.currentYear.observe(viewLifecycleOwner){
+        viewModel.currentYear.observe(viewLifecycleOwner) {
             binding.tvYear.text = it
         }
-        viewModel.currentMonth.observe(viewLifecycleOwner){
+        viewModel.currentMonth.observe(viewLifecycleOwner) {
             binding.tvMonth.text = it
         }
-        viewModel.days.observe(viewLifecycleOwner){
+        viewModel.days.observe(viewLifecycleOwner) {
             currentDays = it
         }
     }
 
-    private fun showNoLessonsText(isEmpty : Boolean){
-        if(isEmpty){
+    private fun showNoLessonsText(isEmpty: Boolean) {
+        if (isEmpty) {
             binding.tvNoLessons.visibility = View.VISIBLE
         } else {
             binding.tvNoLessons.visibility = View.GONE
@@ -132,7 +152,92 @@ class ScheduleFragment : Fragment() {
         _binding = null
     }
 
-    companion object {
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission Granted
+        } else {
+            // Permission Denied / Cancel
+            if (!shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                showSettingsDialog()
+            } else {
+                Toast.makeText(requireActivity(), "Разрешение не предоставлено", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+    }
 
+    private fun requestNotificationPermission() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permissionGranted = (ContextCompat.checkSelfPermission(
+                requireActivity(),
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED)
+
+            val dontShowAgain = prefs.getBoolean(
+                NOTIFICATION_PREFS_KEY,
+                false
+            )
+
+            if (permissionGranted) {
+                // Do your task on permission granted
+            } else if(dontShowAgain){
+                // Skip
+            } else {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                    showExplainDialog()
+                } else{
+                    // Directly ask for the permission
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        } else {
+            // Below Android 13 You don't need to ask for notification permission.
+        }
+    }
+
+    private fun showExplainDialog() {
+        AlertDialog.Builder(requireActivity())
+            .setTitle("Разрешения на уведомления")
+            .setMessage("Чтобы получать напоминания об экзаменах, пожалуйста, разрешите показ уведомлений.")
+            .setPositiveButton("Ок") { _, _ ->
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            .setNeutralButton("Не показывать снова"){dialog,_ ->
+                prefs.edit { putBoolean(NOTIFICATION_PREFS_KEY, true) }
+                dialog.dismiss()
+            }
+            .setNegativeButton("Нет, спасибо") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
+    }
+
+
+
+    private fun showSettingsDialog() {
+        AlertDialog.Builder(requireActivity())
+            .setTitle("Разрешение отклонено")
+            .setMessage("Вы запретили показ уведомлений. Чтобы включить их, перейдите в настройки приложения.")
+            .setPositiveButton("Открыть настройки") { _, _ ->
+                val intent =
+                    Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = ("package:${requireActivity().packageName}").toUri()
+                    }
+                startActivity(intent)
+            }
+            .setNeutralButton("Не показывать снова"){dialog,_ ->
+                prefs.edit { putBoolean(NOTIFICATION_PREFS_KEY, true) }
+                dialog.dismiss()
+            }
+            .create()
+            .show()
+    }
+
+    companion object {
+        private const val NOTIFICATION_PREFS_KEY = "dontShowNotificationPermissionDialog"
     }
 }

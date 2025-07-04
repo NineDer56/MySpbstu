@@ -44,7 +44,7 @@ class ScheduleFragmentViewModel(
         get() = _currentMonth
 
     private val importantLessonTypes = listOf("Экз", "Зч", "ЗаО")
-    private var isNotificationChannelCreated = false
+
 
     private val repository = ScheduleRepositoryImpl()
     private val getScheduleByGroupIdUseCase = GetScheduleByGroupIdUseCase(repository)
@@ -74,19 +74,6 @@ class ScheduleFragmentViewModel(
         }
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Exam Notifications"
-            val descriptionText = "Уведомления о важной учёбе"
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-            }
-
-            val notificationManager = application.applicationContext.getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
 
     private fun makeNotification(lesson: Lesson, date : String){
         val typeOfExam = lesson.lessonType.name
@@ -105,27 +92,23 @@ class ScheduleFragmentViewModel(
         val examDate = LocalDateTime.of(year, month, day, hour, minute).toInstant(ZoneOffset.UTC).toEpochMilli()
         val now = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
         Log.d("MyDebug", "$examDate, now: $now")
-//        if(examDate < now)
-//            return
+        if(examDate < now)
+            return
 
-        //val delay = examDate - now - (24 * 60 * 60 * 1000)
-        val delay = 10_000
+        val delay = examDate - now - (24 * 60 * 60 * 1000) - 3 * 60 * 60 * 1000
+        //val delay = 10_000
         if (delay <= 0)
             return
 
         val name = "$typeOfExam/$subject/$time"
 
-        if(!isNotificationChannelCreated){
-            createNotificationChannel()
-            isNotificationChannelCreated = true
-        }
-
         val workManager = WorkManager.getInstance(application.applicationContext)
         workManager.enqueueUniqueWork(
             name,
-            ExistingWorkPolicy.REPLACE,
+            ExistingWorkPolicy.KEEP,
             ExamWorker.makeRequest(typeOfExam, subject, time, delay.toLong())
         )
+        Log.d("MyDebug", "Создано уведомление $typeOfExam, $subject, $time, через $delay, сейчас ${now}")
     }
 
     fun clearLessons(){
