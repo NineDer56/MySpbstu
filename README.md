@@ -23,11 +23,13 @@
 - SharedPreferences
 - WorkManager (уведомления)
 
-## 🖼️ Скриншоты
+## 📸 Скриншоты
 
-- главный экран
-  ![Снимок экрана 2025-07-05 111927](https://github.com/user-attachments/assets/e925530b-1957-47e9-a3df-5d72821d39b7)
-- выбор группы
-  ![Снимок экрана 2025-07-05 111824](https://github.com/user-attachments/assets/8cb31477-56cf-49a1-8c22-0624062f1c96)
-- уведомление
-  ![Снимок экрана 2025-07-05 121210](https://github.com/user-attachments/assets/ef61f3af-de5f-49d7-870f-520d411cb93e)
+<p float="left">
+  <img src="Screenshots/Снимок экрана 2025-07-05 111847.png" width="250"/>
+  <img src="Screenshots/Снимок экрана 2025-07-05 111927.png" width="250"/>
+  <img src="Screenshots/Снимок экрана 2025-07-05 111954.png" width="250"/>
+  <img src="Screenshots/Снимок экрана 2025-07-05 121117.png" width="250"/>
+  <img src="Screenshots/Снимок экрана 2025-07-05 121210.png" width="250"/>
+</p>
+
