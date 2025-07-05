@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="8dp"
+    android:elevation="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardUseCompatPadding="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="6dp">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_lesson_order"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/dark_green"
+            app:cardCornerRadius="8dp"
+            app:cardUseCompatPadding="true"
+            app:layout_constraintBottom_toBottomOf="@id/tv_building"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_building">
+
+            <TextView
+                android:id="@+id/tv_lesson_order"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:minWidth="40dp"
+                android:minHeight="40dp"
+                android:padding="8dp"
+                android:textColor="@color/dark_gray"
+                android:textSize="20sp"
+                tools:text="1" />
+
+        </androidx.cardview.widget.CardView>
+
+
+        <TextView
+            android:id="@+id/tv_lesson_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:padding="4dp"
+            android:textColor="@color/dark_green"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/card_lesson_order"
+            app:layout_constraintStart_toEndOf="@id/card_lesson_order"
+            app:layout_constraintTop_toTopOf="@id/card_lesson_order"
+            tools:text="10:00 - 11:40" />
+
+        <TextView
+            android:id="@+id/tv_building"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:layout_marginStart="8dp"
+            android:textAlignment="textEnd"
+            android:textColor="@color/dark_green"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tv_lesson_time"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="11-й учебный корпус, 11к., ауд.328" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier_tvOrder_tvBuilding"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="tv_lesson_order, tv_building" />
+
+        <TextView
+            android:id="@+id/tv_lesson_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:lineSpacingExtra="1dp"
+            android:textStyle="bold"
+            android:maxWidth="290dp"
+            android:breakStrategy="simple"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/barrier_tvOrder_tvBuilding"
+            tools:text="Элективная физическая культура и спорт" />
+
+        <TextView
+            android:id="@+id/tv_lesson_type"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_lesson_name"
+            tools:text="Зачет" />
+
+        <TextView
+            android:id="@+id/tv_lesson_teacher"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_lesson_type"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="Кульков Ян Александрович" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

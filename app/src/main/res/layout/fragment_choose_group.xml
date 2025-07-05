@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ChooseGroupFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/edit_text_group_num"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:hint="@string/enter_group_number"
+            android:importantForAutofill="no"
+            android:inputType="text" />
+
+        <Button
+            android:id="@+id/btn_find_groups"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Найти"
+            android:layout_gravity="center"
+            android:layout_margin="8dp"
+            android:backgroundTint="@color/dark_green"/>
+    </LinearLayout>
+
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_groups"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:listitem="@layout/group_item"
+        tools:itemCount="4"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+</LinearLayout>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardBackgroundColor="@color/dark_gray"
+
+    app:cardCornerRadius="12dp"
+    app:cardUseCompatPadding="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_week"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/tv_day1"
+            style="@style/day_item_style"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day2"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="23" />
+
+        <TextView
+            android:id="@+id/tv_day2"
+            style="@style/day_item_style"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day3"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day1"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="24" />
+
+        <TextView
+            android:id="@+id/tv_day3"
+            style="@style/day_item_style"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day4"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day2"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="25" />
+
+        <TextView
+            android:id="@+id/tv_day4"
+            style="@style/day_item_style"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day5"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day3"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="26" />
+
+        <TextView
+            android:id="@+id/tv_day5"
+            style="@style/day_item_style"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day6"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day4"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="27" />
+
+        <TextView
+            android:id="@+id/tv_day6"
+            style="@style/day_item_style"
+            app:layout_constraintEnd_toStartOf="@+id/tv_day7"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day5"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="28" />
+
+        <TextView
+            android:id="@+id/tv_day7"
+            style="@style/day_item_style"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tv_day6"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="29" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>
