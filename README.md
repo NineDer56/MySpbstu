@@ -25,11 +25,29 @@
 
 ## 📸 Скриншоты
 
-<p float="left">
-  <img src="Screenshots/Снимок экрана 2025-07-05 111847.png" width="250"/>
-  <img src="Screenshots/Снимок экрана 2025-07-05 111927.png" width="250"/>
-  <img src="Screenshots/Снимок экрана 2025-07-05 111954.png" width="250"/>
-  <img src="Screenshots/Снимок экрана 2025-07-05 121117.png" width="250"/>
-  <img src="Screenshots/Снимок экрана 2025-07-05 121210.png" width="250"/>
+<p float="left" align="center">
+
+  <div style="display: inline-block; margin: 10px; text-align: center;">
+    <img src="Screenshots/Снимок экрана 2025-07-05 111847.png" width="250"/>
+    <div>🔔 Разрешение на уведомления</div>
+  </div>
+
+  <div style="display: inline-block; margin: 10px; text-align: center;">
+    <img src="Screenshots/Снимок экрана 2025-07-05 111927.png" width="250"/>
+    <div>🔍 Расписание дня</div>
+  </div>
+
+  <div style="display: inline-block; margin: 10px; text-align: center;">
+    <img src="Screenshots/Снимок экрана 2025-07-05 111954.png" width="250"/>
+    <div>📅 Выбор новой группы</div>
+  </div>
+
+  <div style="display: inline-block; margin: 10px; text-align: center;">
+    <img src="Screenshots/Снимок экрана 2025-07-05 121117.png" width="250"/>
+    <div>🔔 Уведомление о зачете</div>
+  </div>
+
+
 </p>
+
 
