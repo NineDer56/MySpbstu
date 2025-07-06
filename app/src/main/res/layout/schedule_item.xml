@@ -74,7 +74,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:barrierDirection="bottom"
-            app:constraint_referenced_ids="tv_lesson_order, tv_building" />
+            app:constraint_referenced_ids="card_lesson_order, tv_building" />
 
         <TextView
             android:id="@+id/tv_lesson_name"
