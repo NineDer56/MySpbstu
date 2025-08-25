@@ -2,10 +2,14 @@ package com.example.myspbstu
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -14,6 +18,7 @@ import com.example.myspbstu.databinding.FragmentChooseGroupBinding
 import com.example.myspbstu.domain.model.Group
 import com.example.myspbstu.presentation.adapter.GroupsAdapter
 import com.example.myspbstu.presentation.viewmodel.ChooseGroupViewModel
+import com.google.android.material.navigation.NavigationBarView.OnItemSelectedListener
 import java.util.prefs.Preferences
 
 class ChooseGroupFragment : Fragment() {
@@ -63,8 +68,10 @@ class ChooseGroupFragment : Fragment() {
 
         groupsAdapter.onGroupClickListener = object : GroupsAdapter.OnGroupClickListener {
             override fun onGroupClick(group: Group) {
-                prefs.edit { putInt(PREFS_GROUP_ID_KEY, group.id).apply() }
-                prefs.edit { putString(PREFS_GROUP_NAME_KEY, group.name).apply() }
+                prefs.edit {
+                    putInt(PREFS_GROUP_ID_KEY, group.id)
+                    putString(PREFS_GROUP_NAME_KEY, group.name)
+                }
 
                 navController.navigate(
                     ChooseGroupFragmentDirections
@@ -74,6 +81,30 @@ class ChooseGroupFragment : Fragment() {
         }
 
         observeLiveData()
+
+
+        binding.spinnerSelectionOptions.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    Log.d("Spinner", "onItemSelected: position $position, id $id")
+
+                    when (position) {
+                        0 -> binding.editTextGroupNum.hint = getString(R.string.enter_group_number)
+                        1 -> binding.editTextGroupNum.hint = getString(R.string.enter_teachers_name)
+                        else -> binding.editTextGroupNum.hint =
+                            getString(R.string.enter_group_number)
+                    }
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    Log.d("Spinner", "onNothingSelected")
+                }
+            }
 
         with(binding) {
             rvGroups.adapter = groupsAdapter

@@ -7,6 +7,18 @@
     android:orientation="vertical"
     tools:context=".ChooseGroupFragment">
 
+    <androidx.appcompat.widget.AppCompatSpinner
+        android:id="@+id/spinner_selection_options"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:entries="@array/selection_options"
+        android:minHeight="48dp"
+        android:spinnerMode="dialog"
+        app:backgroundTint="@color/dark_gray" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,30 +27,30 @@
         <EditText
             android:id="@+id/edit_text_group_num"
             android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_margin="8dp"
+            android:layout_weight="1"
             android:hint="@string/enter_group_number"
             android:importantForAutofill="no"
-            android:inputType="text" />
+            android:inputType="text"
+            android:textSize="16sp" />
 
         <Button
             android:id="@+id/btn_find_groups"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Найти"
             android:layout_gravity="center"
             android:layout_margin="8dp"
-            android:backgroundTint="@color/dark_green"/>
+            android:backgroundTint="@color/dark_green"
+            android:text="@string/find_button" />
     </LinearLayout>
-
 
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_groups"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:listitem="@layout/group_item"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:itemCount="4"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        tools:listitem="@layout/group_item" />
 </LinearLayout>
