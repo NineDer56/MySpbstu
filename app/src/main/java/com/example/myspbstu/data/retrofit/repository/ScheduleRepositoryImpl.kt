@@ -26,4 +26,10 @@ class ScheduleRepositoryImpl : ScheduleRepository {
         return ScheduleApiFactory.scheduleApiService.getTeachersByName(name).teachers
             .map { nwMapper.mapTeacherNwModelToEntity(it) }
     }
+
+    override suspend fun getScheduleByTeacherId(teacherId: Int, date: String): Schedule {
+        return nwMapper.mapScheduleNwModelToEntity(
+            ScheduleApiFactory.scheduleApiService.getScheduleByTeacherId(teacherId, date)
+        )
+    }
 }

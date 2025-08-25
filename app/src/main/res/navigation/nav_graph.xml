@@ -27,5 +27,13 @@
             android:name="groupName"
             android:defaultValue=""
             app:argType="string" />
+        <argument
+            android:name="teacherId"
+            android:defaultValue="0"
+            app:argType="integer" />
+        <argument
+            android:name="teacherName"
+            android:defaultValue=""
+            app:argType="string" />
     </fragment>
 </navigation>

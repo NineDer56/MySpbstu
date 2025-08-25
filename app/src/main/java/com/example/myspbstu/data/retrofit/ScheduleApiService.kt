@@ -20,4 +20,10 @@ interface ScheduleApiService {
 
     @GET("search/teachers")
     suspend fun getTeachersByName(@Query("q") name: String) : TeacherResponse
+
+    @GET("teachers/{teacherId}/scheduler")
+    suspend fun getScheduleByTeacherId(
+        @Path("teacherId") teacherId : Int,
+        @Query("date") date : String
+    ) : ScheduleNwModel
 }
