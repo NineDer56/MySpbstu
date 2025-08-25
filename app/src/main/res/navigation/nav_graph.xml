@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/chooseGroupFragment"
-        android:name="com.example.myspbstu.ChooseGroupFragment"
+        android:name="com.example.myspbstu.ChooseScheduleFragment"
         android:label="fragment_choose_group"
-        tools:layout="@layout/fragment_choose_group">
+        tools:layout="@layout/fragment_choose_schedule">
         <action
             android:id="@+id/action_chooseGroupFragment_to_scheduleFragment"
             app:destination="@id/scheduleFragment" />

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ChooseGroupFragment">
+    tools:context=".ChooseScheduleFragment">
 
     <androidx.appcompat.widget.AppCompatSpinner
         android:id="@+id/spinner_selection_options"
@@ -33,7 +33,7 @@
             android:hint="@string/enter_group_number"
             android:importantForAutofill="no"
             android:inputType="text"
-            android:textSize="16sp" />
+             />
 
         <Button
             android:id="@+id/btn_find_groups"

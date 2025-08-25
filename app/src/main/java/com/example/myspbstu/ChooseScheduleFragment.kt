@@ -5,34 +5,33 @@ import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import androidx.core.content.edit
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
-import com.example.myspbstu.databinding.FragmentChooseGroupBinding
-import com.example.myspbstu.domain.model.Group
+import com.example.myspbstu.databinding.FragmentChooseScheduleBinding
 import com.example.myspbstu.presentation.adapter.GroupsAdapter
-import com.example.myspbstu.presentation.viewmodel.ChooseGroupViewModel
-import com.google.android.material.navigation.NavigationBarView.OnItemSelectedListener
-import java.util.prefs.Preferences
+import com.example.myspbstu.presentation.adapter.TeachersAdapter
+import com.example.myspbstu.presentation.viewmodel.ChooseScheduleViewModel
 
-class ChooseGroupFragment : Fragment() {
+class ChooseScheduleFragment : Fragment() {
 
-    private var _binding: FragmentChooseGroupBinding? = null
-    private val binding: FragmentChooseGroupBinding
+    private var _binding: FragmentChooseScheduleBinding? = null
+    private val binding: FragmentChooseScheduleBinding
         get() = _binding ?: throw RuntimeException("FragmentChooseGroupBinding is null")
 
-    private val viewModel: ChooseGroupViewModel by lazy {
-        ViewModelProvider(this)[ChooseGroupViewModel::class.java]
+    private val viewModel: ChooseScheduleViewModel by lazy {
+        ViewModelProvider(this)[ChooseScheduleViewModel::class.java]
     }
 
     private val groupsAdapter: GroupsAdapter by lazy {
         GroupsAdapter()
+    }
+
+    private val teachersAdapter : TeachersAdapter by lazy {
+        TeachersAdapter()
     }
 
     private val navController: NavController by lazy {
@@ -43,13 +42,15 @@ class ChooseGroupFragment : Fragment() {
         requireActivity().getSharedPreferences(PREFS_GROUP_ID_KEY, Context.MODE_PRIVATE)
     }
 
+    private var areGroupsSelected = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val groupId = prefs.getInt(PREFS_GROUP_ID_KEY, -1)
         val groupName = prefs.getString(PREFS_GROUP_NAME_KEY, "") ?: ""
         if (groupId != -1 && groupName != "") {
             navController.navigate(
-                ChooseGroupFragmentDirections
+                ChooseScheduleFragmentDirections
                     .actionChooseGroupFragmentToScheduleFragment(groupId, groupName)
             )
         }
@@ -59,26 +60,26 @@ class ChooseGroupFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentChooseGroupBinding.inflate(inflater, container, false)
+        _binding = FragmentChooseScheduleBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        groupsAdapter.onGroupClickListener = object : GroupsAdapter.OnGroupClickListener {
-            override fun onGroupClick(group: Group) {
-                prefs.edit {
-                    putInt(PREFS_GROUP_ID_KEY, group.id)
-                    putString(PREFS_GROUP_NAME_KEY, group.name)
-                }
-
-                navController.navigate(
-                    ChooseGroupFragmentDirections
-                        .actionChooseGroupFragmentToScheduleFragment(group.id, group.name)
-                )
-            }
-        }
+//        groupsAdapter.onGroupClickListener = object : GroupsAdapter.OnGroupClickListener {
+//            override fun onGroupClick(group: Group) {
+//                prefs.edit {
+//                    putInt(PREFS_GROUP_ID_KEY, group.id)
+//                    putString(PREFS_GROUP_NAME_KEY, group.name)
+//                }
+//
+//                navController.navigate(
+//                    ChooseGroupFragmentDirections
+//                        .actionChooseGroupFragmentToScheduleFragment(group.id, group.name)
+//                )
+//            }
+//        }
 
         observeLiveData()
 
@@ -94,10 +95,18 @@ class ChooseGroupFragment : Fragment() {
                     Log.d("Spinner", "onItemSelected: position $position, id $id")
 
                     when (position) {
-                        0 -> binding.editTextGroupNum.hint = getString(R.string.enter_group_number)
-                        1 -> binding.editTextGroupNum.hint = getString(R.string.enter_teachers_name)
-                        else -> binding.editTextGroupNum.hint =
-                            getString(R.string.enter_group_number)
+                        0 -> {
+                            binding.editTextGroupNum.hint = getString(R.string.enter_group_number)
+                            areGroupsSelected = true
+                        }
+                        1 -> {
+                            binding.editTextGroupNum.hint = getString(R.string.enter_teachers_name)
+                            areGroupsSelected = false
+                        }
+                        else -> {
+                            binding.editTextGroupNum.hint = getString(R.string.enter_group_number)
+                            areGroupsSelected = true
+                        }
                     }
                 }
 
@@ -107,14 +116,18 @@ class ChooseGroupFragment : Fragment() {
             }
 
         with(binding) {
-            rvGroups.adapter = groupsAdapter
             btnFindGroups.setOnClickListener {
-                val groupName = editTextGroupNum.text.toString()
-                viewModel.getGroupsByName(groupName)
+                if(spinnerSelectionOptions.selectedItemPosition == 1){
+                    rvGroups.adapter = teachersAdapter
+                    val teacherName = editTextGroupNum.text.toString()
+                    viewModel.getTeachersByName(teacherName)
+                } else {
+                    rvGroups.adapter = groupsAdapter
+                    val groupName = editTextGroupNum.text.toString()
+                    viewModel.getGroupsByName(groupName)
+                }
             }
         }
-
-
     }
 
     override fun onDestroyView() {
@@ -125,6 +138,9 @@ class ChooseGroupFragment : Fragment() {
     private fun observeLiveData() {
         viewModel.groups.observe(viewLifecycleOwner) {
             groupsAdapter.submitList(it)
+        }
+        viewModel.teachers.observe(viewLifecycleOwner){
+            teachersAdapter.submitList(it)
         }
     }
 
