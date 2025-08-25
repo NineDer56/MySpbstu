@@ -1,9 +1,11 @@
 package com.example.myspbstu.presentation.viewmodel
 
 import android.app.Application
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.example.myspbstu.data.retrofit.repository.ScheduleRepositoryImpl
 import com.example.myspbstu.domain.model.Group
@@ -25,10 +27,14 @@ class ChooseGroupViewModel(
 
     fun getGroupsByName(name : String){
         viewModelScope.launch {
-            val groups = withContext(Dispatchers.IO){
-                getGroupsByNameUseCase(name)
+            try {
+                val groups = withContext(Dispatchers.IO){
+                    getGroupsByNameUseCase(name)
+                }
+                _groups.value = groups
+            } catch (e : Exception){
+                Toast.makeText(application.applicationContext, "Ошибка: ${e.message ?: "неизвестно"}", Toast.LENGTH_SHORT).show()
             }
-            _groups.value = groups
         }
     }
 }
