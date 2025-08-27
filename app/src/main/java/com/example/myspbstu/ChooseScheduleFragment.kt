@@ -42,7 +42,7 @@ class ChooseScheduleFragment : Fragment() {
     }
 
     private val prefs by lazy {
-        requireActivity().getSharedPreferences(PREFS_GROUP_ID_KEY, Context.MODE_PRIVATE)
+        requireActivity().getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
     }
 
     private var areGroupsSelected = false
@@ -50,10 +50,10 @@ class ChooseScheduleFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val groupId = prefs.getInt(PREFS_GROUP_ID_KEY, -1)
+        val groupId = prefs.getInt(PREFS_GROUP_ID_KEY, 0)
         val groupName = prefs.getString(PREFS_GROUP_NAME_KEY, "") ?: ""
 
-        val teacherId = prefs.getInt(PREFS_TEACHER_ID_KEY, -1)
+        val teacherId = prefs.getInt(PREFS_TEACHER_ID_KEY, 0)
         val teacherName = prefs.getString(PREFS_TEACHER_NAME_KEY, "") ?: ""
 
         if (groupId != -1 && groupName != "") {
@@ -190,6 +190,8 @@ class ChooseScheduleFragment : Fragment() {
     }
 
     companion object {
+        const val PREFS_FILE = "app_prefs"
+
         const val PREFS_GROUP_ID_KEY = "sharedPreferencesGroupIdKey"
         const val PREFS_GROUP_NAME_KEY = "sharedPreferencesGroupNameKey"
 
