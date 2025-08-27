@@ -2,6 +2,7 @@ package com.example.myspbstu.presentation.viewmodel
 
 import android.app.Application
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,13 +10,17 @@ import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
+import androidx.work.impl.utils.tryDelegateRemoteListenableWorker
 import com.example.myspbstu.data.retrofit.repository.ScheduleRepositoryImpl
 import com.example.myspbstu.domain.model.Day
 import com.example.myspbstu.domain.model.Lesson
 import com.example.myspbstu.domain.usecase.GetScheduleByGroupIdUseCase
+import com.example.myspbstu.domain.usecase.GetScheduleByTeacherIdUseCase
 import com.example.myspbstu.presentation.adapter.WeeksAdapter
 import com.example.myspbstu.presentation.worker.ExamWorker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -49,16 +54,43 @@ class ScheduleFragmentViewModel(
 
     private val repository = ScheduleRepositoryImpl()
     private val getScheduleByGroupIdUseCase = GetScheduleByGroupIdUseCase(repository)
+    private val getScheduleByTeacherIdUseCase = GetScheduleByTeacherIdUseCase(repository)
 
     fun loadScheduleByPositionAndGroupId(position: Int, groupId : Int){
         val date = WeeksAdapter.getDateOfMondayByPosition(position).toString()
 
         viewModelScope.launch{
             Log.d("MyDebug", "position $position, id $groupId, date $date")
-            val schedule = getScheduleByGroupIdUseCase(groupId, date)
-            _days.postValue(schedule.days)
 
-            checkForNotifications(schedule.days)
+            try {
+                val schedule = getScheduleByGroupIdUseCase(groupId, date)
+                _days.postValue(schedule.days)
+                checkForNotifications(schedule.days)
+            } catch (e : Exception){
+                _days.value = emptyList()
+                Toast.makeText(application.applicationContext, "Ошибка: ${e.message ?: "неизвестно"}", Toast.LENGTH_SHORT).show()
+                Log.d("ScheduleFragment", e.message.toString())
+            }
+
+        }
+    }
+
+    fun loadScheduleByPositionAndTeacherId(position: Int, teacherId : Int){
+        val date = WeeksAdapter.getDateOfMondayByPosition(position).toString()
+
+        viewModelScope.launch{
+            Log.d("MyDebug", "position $position, id $teacherId, date $date")
+
+            try {
+                val schedule = getScheduleByTeacherIdUseCase(teacherId, date)
+                _days.postValue(schedule.days)
+                checkForNotifications(schedule.days)
+            } catch (e : Exception){
+                _days.value = emptyList()
+                Toast.makeText(application.applicationContext, "Ошибка: ${e.message ?: "неизвестно"}", Toast.LENGTH_SHORT).show()
+                Log.d("ScheduleFragment", e.message.toString())
+            }
+
         }
     }
 
@@ -116,9 +148,14 @@ class ScheduleFragmentViewModel(
         _lessons.value = emptyList()
     }
 
-    fun onWeekScrolled(position: Int, groupId: Int){
+    fun onWeekScrolled(position: Int, groupId: Int, teacherId: Int){
         loadMonthAndYear(position)
-        loadScheduleByPositionAndGroupId(position, groupId)
+        if(teacherId == 0){
+            loadScheduleByPositionAndGroupId(position, groupId)
+        } else {
+            loadScheduleByPositionAndTeacherId(position, teacherId)
+        }
+
     }
 
     fun onDaySelected(position : Int, dayOfWeek: Int){

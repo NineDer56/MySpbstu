@@ -1,7 +1,12 @@
 <resources>
     <string name="app_name">MySpbstu</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="enter_group_number">Введите номер группы</string>
+    <string name="enter_teachers_name">Введите фио</string>
     <string name="no_lessons">В этот день занятий нет</string>
+    <string name="find_button">Найти</string>
+
+    <string-array name="selection_options">
+        <item>Расписание групп</item>
+        <item>Расписание преподавателей</item>
+    </string-array>
 </resources>

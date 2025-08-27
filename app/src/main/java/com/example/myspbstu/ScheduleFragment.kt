@@ -8,9 +8,6 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -64,6 +61,14 @@ class ScheduleFragment : Fragment() {
         args.groupName
     }
 
+    private val teacherId: Int by lazy {
+        args.teacherId
+    }
+
+    private val teacherName : String by lazy {
+        args.teacherName
+    }
+
     private val prefs by lazy {
         requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
     }
@@ -101,12 +106,20 @@ class ScheduleFragment : Fragment() {
             false
         )
 
+        Log.d("ScheduleFragment", "$groupId, $groupName, $teacherId")
+
         snapHelper.attachToRecyclerView(binding.rvWeek)
         binding.rvWeek.scrollToPosition(WeeksAdapter.START_POSITION)
 
         observeLiveData()
         viewModel.loadMonthAndYear(WeeksAdapter.START_POSITION)
-        viewModel.loadScheduleByPositionAndGroupId(WeeksAdapter.START_POSITION, groupId)
+
+        if(teacherId == 0){
+            viewModel.loadScheduleByPositionAndGroupId(WeeksAdapter.START_POSITION, groupId)
+        } else {
+            viewModel.loadScheduleByPositionAndTeacherId(WeeksAdapter.START_POSITION, teacherId)
+        }
+
 
         val layoutManager = binding.rvWeek.layoutManager as LinearLayoutManager
 
@@ -120,7 +133,7 @@ class ScheduleFragment : Fragment() {
                     viewModel.clearLessons()
                     weeksAdapter.selectedDayIndex = Pair(-1, -1)
 
-                    viewModel.onWeekScrolled(firstVisiblePosition, groupId)
+                    viewModel.onWeekScrolled(firstVisiblePosition, groupId, teacherId)
                     binding.tvToolBarDate.text = ""
                 }
 
@@ -136,15 +149,19 @@ class ScheduleFragment : Fragment() {
             }
         }
 
+        if(teacherId == 0){
+            binding.tvToolbarGroupName.text = "$groupName ↓"
+        } else {
+            binding.tvToolbarGroupName.text = "$teacherName ↓"
+        }
 
-        binding.tvToolbarGroupName.text = "$groupName ↓"
         binding.tvToolbarGroupName.setOnClickListener {
             val popupMenu = PopupMenu(requireContext(), it)
             popupMenu.menuInflater.inflate(R.menu.schedule_menu, popupMenu.menu)
             popupMenu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.findNewGroup -> {
-                        prefs.edit { putInt(ChooseGroupFragment.PREFS_GROUP_ID_KEY, -1) }
+                        prefs.edit { putInt(ChooseScheduleFragment.PREFS_GROUP_ID_KEY, -1) }
                         findNavController().popBackStack()
                         true
                     }

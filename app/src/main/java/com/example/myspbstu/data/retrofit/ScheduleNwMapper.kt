@@ -53,7 +53,7 @@ class ScheduleNwMapper {
             timeEnd = nwModel.timeEnd,
             lessonType = mapLessonTypeNwModelToEntity(nwModel.lessonType),
             groups = nwModel.groups.map { mapGroupNwModelToEntity(it) },
-            teachers = nwModel.teachers?.map { mapTeacherToNwModel(it) } ?: listOf(Teacher(-1, "Не знаю кто")),
+            teachers = nwModel.teachers?.map { mapTeacherNwModelToEntity(it) } ?: listOf(Teacher(-1, "Не знаю кто", "")),
             auditories = nwModel.auditories.map { mapAuditoryNwModelToEntity(it) }
         )
     }
@@ -83,10 +83,11 @@ class ScheduleNwMapper {
         )
     }
 
-    fun mapTeacherToNwModel(nwModel : TeacherNwModel) : Teacher{
+    fun mapTeacherNwModelToEntity(nwModel : TeacherNwModel) : Teacher{
         return Teacher(
             id = nwModel.id,
-            name = nwModel.name
+            name = nwModel.name,
+            chair = nwModel.chair
         )
     }
 

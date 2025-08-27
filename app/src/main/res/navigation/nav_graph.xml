@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/chooseGroupFragment"
-        android:name="com.example.myspbstu.ChooseGroupFragment"
+        android:name="com.example.myspbstu.ChooseScheduleFragment"
         android:label="fragment_choose_group"
-        tools:layout="@layout/fragment_choose_group">
+        tools:layout="@layout/fragment_choose_schedule">
         <action
             android:id="@+id/action_chooseGroupFragment_to_scheduleFragment"
             app:destination="@id/scheduleFragment" />
@@ -25,6 +25,14 @@
             app:argType="integer" />
         <argument
             android:name="groupName"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="teacherId"
+            android:defaultValue="0"
+            app:argType="integer" />
+        <argument
+            android:name="teacherName"
             android:defaultValue=""
             app:argType="string" />
     </fragment>

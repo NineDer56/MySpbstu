@@ -4,6 +4,7 @@ import com.example.myspbstu.data.retrofit.ScheduleApiFactory
 import com.example.myspbstu.data.retrofit.ScheduleNwMapper
 import com.example.myspbstu.domain.model.Group
 import com.example.myspbstu.domain.model.Schedule
+import com.example.myspbstu.domain.model.Teacher
 import com.example.myspbstu.domain.repository.ScheduleRepository
 
 class ScheduleRepositoryImpl : ScheduleRepository {
@@ -21,4 +22,14 @@ class ScheduleRepositoryImpl : ScheduleRepository {
         )
     }
 
+    override suspend fun getTeachersByName(name: String): List<Teacher> {
+        return ScheduleApiFactory.scheduleApiService.getTeachersByName(name).teachers
+            .map { nwMapper.mapTeacherNwModelToEntity(it) }
+    }
+
+    override suspend fun getScheduleByTeacherId(teacherId: Int, date: String): Schedule {
+        return nwMapper.mapScheduleNwModelToEntity(
+            ScheduleApiFactory.scheduleApiService.getScheduleByTeacherId(teacherId, date)
+        )
+    }
 }

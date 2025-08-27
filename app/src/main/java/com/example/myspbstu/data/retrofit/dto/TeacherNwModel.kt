@@ -6,5 +6,7 @@ data class TeacherNwModel(
     @SerializedName("id")
     val id: Int,
     @SerializedName("full_name")
-    val name : String
+    val name : String,
+    @SerializedName("chair")
+    val chair : String
 )
