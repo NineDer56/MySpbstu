@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
@@ -25,81 +26,88 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
 
-class ScheduleFragmentViewModel(
-    application: Application
-) : AndroidViewModel(application) {
+class ScheduleFragmentViewModel @Inject constructor(
+    private val application: Application,
+    private val getScheduleByGroupIdUseCase : GetScheduleByGroupIdUseCase,
+    private val getScheduleByTeacherIdUseCase : GetScheduleByTeacherIdUseCase
+) : ViewModel() {
 
     private var _lessons = MutableLiveData<List<Lesson>>()
     val lessons: LiveData<List<Lesson>> get() = _lessons
 
     private var _days = MutableLiveData<List<Day>>()
-    val days : LiveData<List<Day>>
+    val days: LiveData<List<Day>>
         get() = _days
 
     private var _currentYear = MutableLiveData<String>()
-    val currentYear : LiveData<String>
+    val currentYear: LiveData<String>
         get() = _currentYear
 
     private var _currentMonth = MutableLiveData<String>()
-    val currentMonth : LiveData<String>
+    val currentMonth: LiveData<String>
         get() = _currentMonth
 
     private var _currentDay = MutableLiveData<String>()
-    val currentDay : LiveData<String>
+    val currentDay: LiveData<String>
         get() = _currentDay
 
     private val importantLessonTypes = listOf("Экз", "Зч", "ЗаО")
 
 
-    private val repository = ScheduleRepositoryImpl()
-    private val getScheduleByGroupIdUseCase = GetScheduleByGroupIdUseCase(repository)
-    private val getScheduleByTeacherIdUseCase = GetScheduleByTeacherIdUseCase(repository)
-
-    fun loadScheduleByPositionAndGroupId(position: Int, groupId : Int){
+    fun loadScheduleByPositionAndGroupId(position: Int, groupId: Int) {
         val date = WeeksAdapter.getDateOfMondayByPosition(position).toString()
 
-        viewModelScope.launch{
+        viewModelScope.launch {
             Log.d("MyDebug", "position $position, id $groupId, date $date")
 
             try {
                 val schedule = getScheduleByGroupIdUseCase(groupId, date)
                 _days.postValue(schedule.days)
                 checkForNotifications(schedule.days)
-            } catch (e : Exception){
+            } catch (e: Exception) {
                 _days.value = emptyList()
-                Toast.makeText(application.applicationContext, "Ошибка: ${e.message ?: "неизвестно"}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    application.applicationContext,
+                    "Ошибка: ${e.message ?: "неизвестно"}",
+                    Toast.LENGTH_SHORT
+                ).show()
                 Log.d("ScheduleFragment", e.message.toString())
             }
 
         }
     }
 
-    fun loadScheduleByPositionAndTeacherId(position: Int, teacherId : Int){
+    fun loadScheduleByPositionAndTeacherId(position: Int, teacherId: Int) {
         val date = WeeksAdapter.getDateOfMondayByPosition(position).toString()
 
-        viewModelScope.launch{
+        viewModelScope.launch {
             Log.d("MyDebug", "position $position, id $teacherId, date $date")
 
             try {
                 val schedule = getScheduleByTeacherIdUseCase(teacherId, date)
                 _days.postValue(schedule.days)
                 checkForNotifications(schedule.days)
-            } catch (e : Exception){
+            } catch (e: Exception) {
                 _days.value = emptyList()
-                Toast.makeText(application.applicationContext, "Ошибка: ${e.message ?: "неизвестно"}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    application.applicationContext,
+                    "Ошибка: ${e.message ?: "неизвестно"}",
+                    Toast.LENGTH_SHORT
+                ).show()
                 Log.d("ScheduleFragment", e.message.toString())
             }
 
         }
     }
 
-    private fun checkForNotifications(days : List<Day>){
-        for(day in days){
+    private fun checkForNotifications(days: List<Day>) {
+        for (day in days) {
             val date = day.date
-            for(lesson in day.lessons){
+            for (lesson in day.lessons) {
                 Log.d("MyDebug", "${lesson.lessonType.abbr}, list: $importantLessonTypes")
-                if(lesson.lessonType.abbr in importantLessonTypes){
+                if (lesson.lessonType.abbr in importantLessonTypes) {
                     makeNotification(lesson, date)
                     Log.d("MyDebug", "notif: lesson $lesson, date $date")
                 }
@@ -108,7 +116,7 @@ class ScheduleFragmentViewModel(
     }
 
 
-    private fun makeNotification(lesson: Lesson, date : String){
+    private fun makeNotification(lesson: Lesson, date: String) {
         val typeOfExam = lesson.lessonType.name
         val subject = lesson.subject
         val time = lesson.timeStart
@@ -122,10 +130,11 @@ class ScheduleFragmentViewModel(
         val hour = splitTime[0].toInt()
         val minute = splitTime[1].toInt()
 
-        val examDate = LocalDateTime.of(year, month, day, hour, minute).toInstant(ZoneOffset.UTC).toEpochMilli()
+        val examDate = LocalDateTime.of(year, month, day, hour, minute).toInstant(ZoneOffset.UTC)
+            .toEpochMilli()
         val now = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
         Log.d("MyDebug", "$examDate, now: $now")
-        if(examDate < now)
+        if (examDate < now)
             return
 
         val delay = examDate - now - (24 * 60 * 60 * 1000) - 3 * 60 * 60 * 1000
@@ -141,16 +150,19 @@ class ScheduleFragmentViewModel(
             ExistingWorkPolicy.KEEP,
             ExamWorker.makeRequest(typeOfExam, subject, time, delay.toLong())
         )
-        Log.d("MyDebug", "Создано уведомление $typeOfExam, $subject, $time, через $delay, сейчас ${now}")
+        Log.d(
+            "MyDebug",
+            "Создано уведомление $typeOfExam, $subject, $time, через $delay, сейчас ${now}"
+        )
     }
 
-    fun clearLessons(){
+    fun clearLessons() {
         _lessons.value = emptyList()
     }
 
-    fun onWeekScrolled(position: Int, groupId: Int, teacherId: Int){
+    fun onWeekScrolled(position: Int, groupId: Int, teacherId: Int) {
         loadMonthAndYear(position)
-        if(teacherId == 0){
+        if (teacherId == 0) {
             loadScheduleByPositionAndGroupId(position, groupId)
         } else {
             loadScheduleByPositionAndTeacherId(position, teacherId)
@@ -158,7 +170,7 @@ class ScheduleFragmentViewModel(
 
     }
 
-    fun onDaySelected(position : Int, dayOfWeek: Int){
+    fun onDaySelected(position: Int, dayOfWeek: Int) {
         val curLessons = days.value?.find { it.weekday == dayOfWeek + 1 }?.lessons
         _lessons.value = curLessons.orEmpty()
 
@@ -168,7 +180,7 @@ class ScheduleFragmentViewModel(
         _currentDay.value = newDate.format(formatter).toString()
     }
 
-    fun loadMonthAndYear(position: Int){
+    fun loadMonthAndYear(position: Int) {
         _currentYear.value = WeeksAdapter.getYearByPosition(position)
         _currentMonth.value = WeeksAdapter.getMonthByPosition(position)
     }

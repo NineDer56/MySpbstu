@@ -31,9 +31,23 @@ import com.example.myspbstu.presentation.adapter.WeeksAdapter
 import com.example.myspbstu.presentation.viewmodel.ScheduleFragmentViewModel
 import androidx.core.content.edit
 import androidx.navigation.fragment.findNavController
+import com.example.myspbstu.presentation.viewmodel.ViewModelFactory
+import javax.inject.Inject
 
 
 class ScheduleFragment : Fragment() {
+
+    private val component by lazy{
+        (requireActivity().application as SpbstuApplication)
+            .component
+    }
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val viewModel by lazy {
+        ViewModelProvider(this, viewModelFactory)[ScheduleFragmentViewModel::class.java]
+    }
 
     val args: ScheduleFragmentArgs by navArgs()
 
@@ -47,10 +61,6 @@ class ScheduleFragment : Fragment() {
 
     private val weeksAdapter by lazy {
         WeeksAdapter()
-    }
-
-    private val viewModel by lazy {
-        ViewModelProvider(this)[ScheduleFragmentViewModel::class.java]
     }
 
     private val groupId: Int by lazy {
@@ -76,6 +86,11 @@ class ScheduleFragment : Fragment() {
     private val snapHelper by lazy { PagerSnapHelper() }
 
     private var currentDays: List<Day>? = null
+
+    override fun onAttach(context: Context) {
+        component.inject(this)
+        super.onAttach(context)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
