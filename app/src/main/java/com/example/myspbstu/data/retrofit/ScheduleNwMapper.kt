@@ -20,8 +20,9 @@ import com.example.myspbstu.domain.model.LessonType
 import com.example.myspbstu.domain.model.Schedule
 import com.example.myspbstu.domain.model.Teacher
 import com.example.myspbstu.domain.model.Week
+import javax.inject.Inject
 
-class ScheduleNwMapper {
+class ScheduleNwMapper @Inject constructor() {
 
     fun mapScheduleNwModelToEntity(nwModel: ScheduleNwModel) : Schedule{
         return Schedule(

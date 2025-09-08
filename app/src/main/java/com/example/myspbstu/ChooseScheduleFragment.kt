@@ -18,16 +18,26 @@ import com.example.myspbstu.domain.model.Teacher
 import com.example.myspbstu.presentation.adapter.GroupsAdapter
 import com.example.myspbstu.presentation.adapter.TeachersAdapter
 import com.example.myspbstu.presentation.viewmodel.ChooseScheduleViewModel
+import com.example.myspbstu.presentation.viewmodel.ViewModelFactory
+import javax.inject.Inject
 
 class ChooseScheduleFragment : Fragment() {
+
+    private val component by lazy {
+        (requireActivity().application as SpbstuApplication)
+            .component
+    }
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val viewModel: ChooseScheduleViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory)[ChooseScheduleViewModel::class.java]
+    }
 
     private var _binding: FragmentChooseScheduleBinding? = null
     private val binding: FragmentChooseScheduleBinding
         get() = _binding ?: throw RuntimeException("FragmentChooseGroupBinding is null")
-
-    private val viewModel: ChooseScheduleViewModel by lazy {
-        ViewModelProvider(this)[ChooseScheduleViewModel::class.java]
-    }
 
     private val groupsAdapter: GroupsAdapter by lazy {
         GroupsAdapter()
@@ -46,6 +56,11 @@ class ChooseScheduleFragment : Fragment() {
     }
 
     private var areGroupsSelected = false
+
+    override fun onAttach(context: Context) {
+        component.inject(this)
+        super.onAttach(context)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
