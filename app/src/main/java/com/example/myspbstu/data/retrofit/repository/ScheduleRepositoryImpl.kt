@@ -8,7 +8,6 @@ import com.example.myspbstu.domain.model.Schedule
 import com.example.myspbstu.domain.model.Teacher
 import com.example.myspbstu.domain.repository.ScheduleRepository
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn

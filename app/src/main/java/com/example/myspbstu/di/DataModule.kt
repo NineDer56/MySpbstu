@@ -26,7 +26,6 @@ interface DataModule {
         }
 
         @IoDispatcher
-        @ApplicationScope
         @Provides
         fun provideDispatcherIo() : CoroutineDispatcher{
             return Dispatchers.IO

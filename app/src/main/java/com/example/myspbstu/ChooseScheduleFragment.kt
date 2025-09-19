@@ -3,15 +3,19 @@ package com.example.myspbstu
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import android.widget.Toast
 import androidx.core.content.edit
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import com.example.myspbstu.databinding.FragmentChooseScheduleBinding
 import com.example.myspbstu.domain.model.Group
 import com.example.myspbstu.domain.model.Teacher
@@ -19,6 +23,7 @@ import com.example.myspbstu.presentation.adapter.GroupsAdapter
 import com.example.myspbstu.presentation.adapter.TeachersAdapter
 import com.example.myspbstu.presentation.viewmodel.ChooseScheduleViewModel
 import com.example.myspbstu.presentation.viewmodel.ViewModelFactory
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ChooseScheduleFragment : Fragment() {
@@ -48,7 +53,7 @@ class ChooseScheduleFragment : Fragment() {
     }
 
     private val navController: NavController by lazy {
-        findNavController()
+        NavHostFragment.findNavController(this)
     }
 
     private val prefs by lazy {
@@ -62,33 +67,6 @@ class ChooseScheduleFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val groupId = prefs.getInt(PREFS_GROUP_ID_KEY, 0)
-        val groupName = prefs.getString(PREFS_GROUP_NAME_KEY, "") ?: ""
-
-        val teacherId = prefs.getInt(PREFS_TEACHER_ID_KEY, 0)
-        val teacherName = prefs.getString(PREFS_TEACHER_NAME_KEY, "") ?: ""
-
-        if (groupId != -1 && groupName != "") {
-            navController.navigate(
-                ChooseScheduleFragmentDirections
-                    .actionChooseGroupFragmentToScheduleFragment(groupId, groupName)
-            )
-        } else if (teacherId != -1 && teacherName != "") {
-            navController.navigate(
-                ChooseScheduleFragmentDirections
-                    .actionChooseGroupFragmentToScheduleFragment(
-                        groupId = 0,
-                        groupName = "",
-                        teacherId = teacherId,
-                        teacherName = teacherName
-                    )
-            )
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -100,13 +78,52 @@ class ChooseScheduleFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        checkSharedPreferences()
+        setOnGroupClickListener()
+        setOnTeacherClickListeners()
+        collectFlow()
+        setSpinnerItemSelectedListener()
+        setOnClickListeners()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    private fun checkSharedPreferences(){
+        val groupId = prefs.getInt(PREFS_GROUP_ID_KEY, -1)
+        val groupName = prefs.getString(PREFS_GROUP_NAME_KEY, "") ?: ""
+
+        val teacherId = prefs.getInt(PREFS_TEACHER_ID_KEY, -1)
+        val teacherName = prefs.getString(PREFS_TEACHER_NAME_KEY, "") ?: ""
+
+        if (groupId != -1 && groupName != "") {
+            navController.navigate(
+                ChooseScheduleFragmentDirections
+                    .actionChooseGroupFragmentToScheduleFragment(groupId, groupName)
+            )
+        } else if (teacherId != -1 && teacherName != "") {
+            navController.navigate(
+                ChooseScheduleFragmentDirections
+                    .actionChooseGroupFragmentToScheduleFragment(
+                        groupId = -1,
+                        groupName = "",
+                        teacherId = teacherId,
+                        teacherName = teacherName
+                    )
+            )
+        }
+    }
+
+    private fun setOnGroupClickListener(){
         groupsAdapter.onGroupClickListener = object : GroupsAdapter.OnGroupClickListener {
             override fun onGroupClick(group: Group) {
                 prefs.edit {
                     putInt(PREFS_GROUP_ID_KEY, group.id)
                     putString(PREFS_GROUP_NAME_KEY, group.name)
 
-                    putInt(PREFS_TEACHER_ID_KEY, 0)
+                    putInt(PREFS_TEACHER_ID_KEY, -1)
                     putString(PREFS_TEACHER_NAME_KEY, "")
                 }
 
@@ -116,21 +133,23 @@ class ChooseScheduleFragment : Fragment() {
                 )
             }
         }
+    }
 
+    private fun setOnTeacherClickListeners(){
         teachersAdapter.onTeacherClickListener = object : TeachersAdapter.OnTeacherClickListener {
             override fun onTeacherClick(teacher: Teacher) {
                 prefs.edit {
                     putInt(PREFS_TEACHER_ID_KEY, teacher.id)
                     putString(PREFS_TEACHER_NAME_KEY, teacher.name)
 
-                    putInt(PREFS_GROUP_ID_KEY, 0)
+                    putInt(PREFS_GROUP_ID_KEY, -1)
                     putString(PREFS_GROUP_NAME_KEY, "")
                 }
 
                 navController.navigate(
                     ChooseScheduleFragmentDirections
                         .actionChooseGroupFragmentToScheduleFragment(
-                            groupId = 0,
+                            groupId = -1,
                             groupName = "",
                             teacherId = teacher.id,
                             teacherName = teacher.name
@@ -138,10 +157,9 @@ class ChooseScheduleFragment : Fragment() {
                 )
             }
         }
+    }
 
-        observeLiveData()
-
-
+    private fun setSpinnerItemSelectedListener(){
         binding.spinnerSelectionOptions.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -155,52 +173,67 @@ class ChooseScheduleFragment : Fragment() {
                     when (position) {
                         0 -> {
                             binding.editTextGroupNum.hint = getString(R.string.enter_group_number)
+                            binding.rvGroups.adapter = groupsAdapter
                             areGroupsSelected = true
                         }
 
                         1 -> {
                             binding.editTextGroupNum.hint = getString(R.string.enter_teachers_name)
+                            binding.rvGroups.adapter = teachersAdapter
                             areGroupsSelected = false
-                        }
-
-                        else -> {
-                            binding.editTextGroupNum.hint = getString(R.string.enter_group_number)
-                            areGroupsSelected = true
                         }
                     }
                 }
-
                 override fun onNothingSelected(parent: AdapterView<*>?) {
                     Log.d("Spinner", "onNothingSelected")
                 }
             }
+    }
 
-        with(binding) {
-            btnFindGroups.setOnClickListener {
-                if (spinnerSelectionOptions.selectedItemPosition == 1) {
-                    rvGroups.adapter = teachersAdapter
-                    val teacherName = editTextGroupNum.text.toString()
-                    viewModel.getTeachersByName(teacherName)
-                } else {
-                    rvGroups.adapter = groupsAdapter
-                    val groupName = editTextGroupNum.text.toString()
-                    viewModel.getGroupsByName(groupName)
-                }
+    private fun setOnClickListeners(){
+        binding.btnFindGroups.setOnClickListener {
+            val query = binding.editTextGroupNum.text.toString().trim()
+            if(query.isEmpty()) return@setOnClickListener
+            if (areGroupsSelected) {
+                viewModel.getGroupsByName(query)
+            } else {
+                viewModel.getTeachersByName(query)
             }
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
-    private fun observeLiveData() {
-        viewModel.groups.observe(viewLifecycleOwner) {
-            groupsAdapter.submitList(it)
-        }
-        viewModel.teachers.observe(viewLifecycleOwner) {
-            teachersAdapter.submitList(it)
+    private fun collectFlow() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.groups.collect {
+                        groupsAdapter.submitList(it)
+                    }
+                }
+                launch {
+                    viewModel.teachers.collect {
+                        teachersAdapter.submitList(it)
+                    }
+                }
+                launch {
+                    viewModel.loading.collect {
+                        binding.progressBar.visibility = if (it) View.VISIBLE else View.GONE
+                    }
+                }
+                launch {
+                    viewModel.uiEvent.collect {
+                        when (it) {
+                            is ChooseScheduleViewModel.UiEvent.Error -> {
+                                Toast.makeText(
+                                    requireContext(),
+                                    it.message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
