@@ -63,6 +63,30 @@ class ScheduleFragmentViewModel @Inject constructor(
     private var jobLoadSchedule: Job? = null
 
 
+    fun onWeekScrolled(position: Int, groupId: Int, teacherId: Int) {
+        loadMonthAndYear(position)
+        if (teacherId == -1) {
+            loadScheduleByPositionAndGroupId(position, groupId)
+        } else {
+            loadScheduleByPositionAndTeacherId(position, teacherId)
+        }
+
+    }
+
+    fun onDaySelected(position: Int, dayOfWeek: Int) {
+        val curLessons = days.value.find { it.weekday == dayOfWeek + 1 }?.lessons
+        _lessons.value = curLessons.orEmpty()
+
+        val date = WeeksAdapter.getDateOfMondayByPosition(position)
+        val newDate = date.plusDays(dayOfWeek.toLong())
+        val formatter = DateTimeFormatter.ofPattern("dd LLLL")
+        _currentDay.value = newDate.format(formatter).toString()
+    }
+
+    fun clearLessons() {
+        _lessons.value = emptyList()
+    }
+
     private fun loadScheduleByPositionAndGroupId(position: Int, groupId: Int) {
         val date = WeeksAdapter.getDateOfMondayByPosition(position).toString()
         jobLoadSchedule?.cancel()
@@ -114,7 +138,6 @@ class ScheduleFragmentViewModel @Inject constructor(
         }
     }
 
-
     private fun makeNotification(lesson: Lesson, date: String) {
         val typeOfExam = lesson.lessonType.name
         val subject = lesson.subject
@@ -153,30 +176,6 @@ class ScheduleFragmentViewModel @Inject constructor(
             "MyDebug",
             "Создано уведомление $typeOfExam, $subject, $time, через $delay, сейчас ${now}"
         )
-    }
-
-    fun clearLessons() {
-        _lessons.value = emptyList()
-    }
-
-    fun onWeekScrolled(position: Int, groupId: Int, teacherId: Int) {
-        loadMonthAndYear(position)
-        if (teacherId == -1) {
-            loadScheduleByPositionAndGroupId(position, groupId)
-        } else {
-            loadScheduleByPositionAndTeacherId(position, teacherId)
-        }
-
-    }
-
-    fun onDaySelected(position: Int, dayOfWeek: Int) {
-        val curLessons = days.value.find { it.weekday == dayOfWeek + 1 }?.lessons
-        _lessons.value = curLessons.orEmpty()
-
-        val date = WeeksAdapter.getDateOfMondayByPosition(position)
-        val newDate = date.plusDays(dayOfWeek.toLong())
-        val formatter = DateTimeFormatter.ofPattern("dd LLLL")
-        _currentDay.value = newDate.format(formatter).toString()
     }
 
     private fun loadMonthAndYear(position: Int) {
