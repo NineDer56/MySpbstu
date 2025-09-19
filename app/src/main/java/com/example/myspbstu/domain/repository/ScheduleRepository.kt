@@ -3,14 +3,15 @@ package com.example.myspbstu.domain.repository
 import com.example.myspbstu.domain.model.Group
 import com.example.myspbstu.domain.model.Schedule
 import com.example.myspbstu.domain.model.Teacher
+import kotlinx.coroutines.flow.Flow
 
 interface ScheduleRepository {
 
-    suspend fun getGroupsByName(name: String): List<Group>
+    fun getGroupsByName(name: String): Flow<List<Group>>
 
-    suspend fun getScheduleByGroupId(groupId: Int, date: String): Schedule
+    fun getScheduleByGroupId(groupId: Int, date: String): Flow<Schedule>
 
-    suspend fun getTeachersByName(name: String): List<Teacher>
+    fun getTeachersByName(name: String): Flow<List<Teacher>>
 
-    suspend fun getScheduleByTeacherId(teacherId: Int, date: String): Schedule
+    fun getScheduleByTeacherId(teacherId: Int, date: String): Flow<Schedule>
 }
