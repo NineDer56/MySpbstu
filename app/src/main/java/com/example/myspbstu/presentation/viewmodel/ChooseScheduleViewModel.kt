@@ -48,7 +48,7 @@ class ChooseScheduleViewModel @Inject constructor(
             getGroupsByNameUseCase.invoke(name)
                 .onStart { _loading.value = true }
                 .catch { cause: Throwable ->
-                    _uiEvent.emit(UiEvent.Error(cause.message ?: "Unknown error"))
+                    _uiEvent.tryEmit(UiEvent.Error(cause.message ?: "Unknown error"))
                 }
                 .onCompletion { _loading.value = false }
                 .collect {_groups.value = it}
@@ -61,7 +61,7 @@ class ChooseScheduleViewModel @Inject constructor(
             getTeachersByNameUseCase.invoke(name)
                 .onStart { _loading.value = true }
                 .catch { cause: Throwable ->
-                    _uiEvent.emit(UiEvent.Error(cause.message ?: "UnknownError"))
+                    _uiEvent.tryEmit(UiEvent.Error(cause.message ?: "UnknownError"))
                 }.onCompletion { _loading.value = false }
                 .collect {
                     _teachers.value = it

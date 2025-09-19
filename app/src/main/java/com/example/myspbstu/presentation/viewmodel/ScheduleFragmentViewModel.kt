@@ -2,27 +2,26 @@ package com.example.myspbstu.presentation.viewmodel
 
 import android.app.Application
 import android.util.Log
-import android.widget.Toast
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
-import androidx.work.impl.utils.tryDelegateRemoteListenableWorker
-import com.example.myspbstu.data.retrofit.repository.ScheduleRepositoryImpl
 import com.example.myspbstu.domain.model.Day
 import com.example.myspbstu.domain.model.Lesson
 import com.example.myspbstu.domain.usecase.GetScheduleByGroupIdUseCase
 import com.example.myspbstu.domain.usecase.GetScheduleByTeacherIdUseCase
 import com.example.myspbstu.presentation.adapter.WeeksAdapter
 import com.example.myspbstu.presentation.worker.ExamWorker
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -30,75 +29,75 @@ import javax.inject.Inject
 
 class ScheduleFragmentViewModel @Inject constructor(
     private val application: Application,
-    private val getScheduleByGroupIdUseCase : GetScheduleByGroupIdUseCase,
-    private val getScheduleByTeacherIdUseCase : GetScheduleByTeacherIdUseCase
+    private val getScheduleByGroupIdUseCase: GetScheduleByGroupIdUseCase,
+    private val getScheduleByTeacherIdUseCase: GetScheduleByTeacherIdUseCase
 ) : ViewModel() {
 
-    private var _lessons = MutableLiveData<List<Lesson>>()
-    val lessons: LiveData<List<Lesson>> get() = _lessons
+    private var _lessons = MutableStateFlow<List<Lesson>>(emptyList())
+    val lessons = _lessons.asStateFlow()
 
-    private var _days = MutableLiveData<List<Day>>()
-    val days: LiveData<List<Day>>
-        get() = _days
+    private var _days = MutableStateFlow<List<Day>>(emptyList())
+    val days = _days.asStateFlow()
 
-    private var _currentYear = MutableLiveData<String>()
-    val currentYear: LiveData<String>
-        get() = _currentYear
+    private var _currentYear = MutableStateFlow<String>("")
+    val currentYear = _currentYear.asStateFlow()
 
-    private var _currentMonth = MutableLiveData<String>()
-    val currentMonth: LiveData<String>
-        get() = _currentMonth
+    private var _currentMonth = MutableStateFlow<String>("")
+    val currentMonth = _currentMonth.asStateFlow()
 
-    private var _currentDay = MutableLiveData<String>()
-    val currentDay: LiveData<String>
-        get() = _currentDay
+    private var _currentDay = MutableStateFlow<String>("")
+    val currentDay = _currentDay.asStateFlow()
 
-    private val importantLessonTypes = listOf("Экз", "Зч", "ЗаО")
+    private var _loading = MutableStateFlow<Boolean>(false)
+    val loading = _loading.asStateFlow()
+
+    private var _uiEvent = MutableSharedFlow<UiEvent>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val uiEvent = _uiEvent.asSharedFlow()
+
+    private val importantLessonTypes = setOf("Экз", "Зч", "ЗаО")
+
+    private var jobLoadSchedule: Job? = null
 
 
-    fun loadScheduleByPositionAndGroupId(position: Int, groupId: Int) {
+    private fun loadScheduleByPositionAndGroupId(position: Int, groupId: Int) {
         val date = WeeksAdapter.getDateOfMondayByPosition(position).toString()
-
-        viewModelScope.launch {
-            Log.d("MyDebug", "position $position, id $groupId, date $date")
-
-            try {
-                val schedule = getScheduleByGroupIdUseCase(groupId, date)
-                _days.postValue(schedule.days)
-                checkForNotifications(schedule.days)
-            } catch (e: Exception) {
-                _days.value = emptyList()
-                Toast.makeText(
-                    application.applicationContext,
-                    "Ошибка: ${e.message ?: "неизвестно"}",
-                    Toast.LENGTH_SHORT
-                ).show()
-                Log.d("ScheduleFragment", e.message.toString())
-            }
-
+        jobLoadSchedule?.cancel()
+        jobLoadSchedule = viewModelScope.launch {
+            getScheduleByGroupIdUseCase(groupId, date)
+                .onStart { _loading.value = true }
+                .catch { cause: Throwable ->
+                    _days.value = emptyList()
+                    _uiEvent.tryEmit(UiEvent.Error(cause.message ?: "Unknown error"))
+                }
+                .onCompletion { _loading.value = false }
+                .collect {
+                    val days = it.days
+                    _days.value = days
+                    checkForNotifications(days)
+                }
         }
     }
 
-    fun loadScheduleByPositionAndTeacherId(position: Int, teacherId: Int) {
+    private fun loadScheduleByPositionAndTeacherId(position: Int, teacherId: Int) {
         val date = WeeksAdapter.getDateOfMondayByPosition(position).toString()
-
-        viewModelScope.launch {
-            Log.d("MyDebug", "position $position, id $teacherId, date $date")
-
-            try {
-                val schedule = getScheduleByTeacherIdUseCase(teacherId, date)
-                _days.postValue(schedule.days)
-                checkForNotifications(schedule.days)
-            } catch (e: Exception) {
-                _days.value = emptyList()
-                Toast.makeText(
-                    application.applicationContext,
-                    "Ошибка: ${e.message ?: "неизвестно"}",
-                    Toast.LENGTH_SHORT
-                ).show()
-                Log.d("ScheduleFragment", e.message.toString())
-            }
-
+        jobLoadSchedule?.cancel()
+        jobLoadSchedule = viewModelScope.launch {
+            getScheduleByTeacherIdUseCase(teacherId, date)
+                .onStart { _loading.value = true }
+                .catch { cause: Throwable ->
+                    _days.value = emptyList()
+                    _uiEvent.tryEmit(UiEvent.Error(cause.message ?: "Unknown error"))
+                }
+                .onCompletion { _loading.value = false }
+                .collect {
+                    val days = it.days
+                    _days.value = days
+                    checkForNotifications(days)
+                }
         }
     }
 
@@ -162,7 +161,7 @@ class ScheduleFragmentViewModel @Inject constructor(
 
     fun onWeekScrolled(position: Int, groupId: Int, teacherId: Int) {
         loadMonthAndYear(position)
-        if (teacherId == 0) {
+        if (teacherId == -1) {
             loadScheduleByPositionAndGroupId(position, groupId)
         } else {
             loadScheduleByPositionAndTeacherId(position, teacherId)
@@ -171,7 +170,7 @@ class ScheduleFragmentViewModel @Inject constructor(
     }
 
     fun onDaySelected(position: Int, dayOfWeek: Int) {
-        val curLessons = days.value?.find { it.weekday == dayOfWeek + 1 }?.lessons
+        val curLessons = days.value.find { it.weekday == dayOfWeek + 1 }?.lessons
         _lessons.value = curLessons.orEmpty()
 
         val date = WeeksAdapter.getDateOfMondayByPosition(position)
@@ -180,8 +179,12 @@ class ScheduleFragmentViewModel @Inject constructor(
         _currentDay.value = newDate.format(formatter).toString()
     }
 
-    fun loadMonthAndYear(position: Int) {
+    private fun loadMonthAndYear(position: Int) {
         _currentYear.value = WeeksAdapter.getYearByPosition(position)
         _currentMonth.value = WeeksAdapter.getMonthByPosition(position)
+    }
+
+    sealed interface UiEvent {
+        data class Error(val message: String) : UiEvent
     }
 }

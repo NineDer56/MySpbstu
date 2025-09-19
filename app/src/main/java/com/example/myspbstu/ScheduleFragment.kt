@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,28 +15,32 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import com.example.myspbstu.databinding.FragmentScheduleBinding
-import com.example.myspbstu.domain.model.Day
 import com.example.myspbstu.presentation.adapter.LessonsAdapter
 import com.example.myspbstu.presentation.adapter.WeeksAdapter
 import com.example.myspbstu.presentation.viewmodel.ScheduleFragmentViewModel
-import androidx.core.content.edit
-import androidx.navigation.fragment.findNavController
 import com.example.myspbstu.presentation.viewmodel.ViewModelFactory
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 class ScheduleFragment : Fragment() {
 
-    private val component by lazy{
+    private val component by lazy {
         (requireActivity().application as SpbstuApplication)
             .component
     }
@@ -67,7 +70,7 @@ class ScheduleFragment : Fragment() {
         args.groupId
     }
 
-    private val groupName : String by lazy {
+    private val groupName: String by lazy {
         args.groupName
     }
 
@@ -75,7 +78,7 @@ class ScheduleFragment : Fragment() {
         args.teacherId
     }
 
-    private val teacherName : String by lazy {
+    private val teacherName: String by lazy {
         args.teacherName
     }
 
@@ -85,7 +88,9 @@ class ScheduleFragment : Fragment() {
 
     private val snapHelper by lazy { PagerSnapHelper() }
 
-    private var currentDays: List<Day>? = null
+    private val layoutManager by lazy {
+        binding.rvWeek.layoutManager as LinearLayoutManager
+    }
 
     override fun onAttach(context: Context) {
         component.inject(this)
@@ -109,9 +114,20 @@ class ScheduleFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setToolBar()
+        setUpRecyclerViews()
+        collectFlow()
+        loadDateAndSchedule()
+        setOnWeekScrollListener()
+        setOnWeekdayClickListener()
+        setUpToolBar()
+    }
 
+    private fun loadDateAndSchedule() {
         binding.tvNoLessons.visibility = View.VISIBLE
+        viewModel.onWeekScrolled(WeeksAdapter.START_POSITION, groupId, teacherId)
+    }
 
+    private fun setUpRecyclerViews() {
         binding.rvSchedule.adapter = lessonsAdapter
         binding.rvWeek.adapter = weeksAdapter
 
@@ -121,23 +137,87 @@ class ScheduleFragment : Fragment() {
             false
         )
 
-        Log.d("ScheduleFragment", "$groupId, $groupName, $teacherId")
-
         snapHelper.attachToRecyclerView(binding.rvWeek)
         binding.rvWeek.scrollToPosition(WeeksAdapter.START_POSITION)
+    }
 
-        observeLiveData()
-        viewModel.loadMonthAndYear(WeeksAdapter.START_POSITION)
+    private fun collectFlow() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.lessons.collect {
+                        lessonsAdapter.submitList(it)
+                        showNoLessonsText(it.isEmpty())
+                    }
+                }
+                launch {
+                    viewModel.currentYear.collect {
+                        binding.tvYear.text = it
+                    }
+                }
+                launch {
+                    viewModel.currentMonth.collect {
+                        binding.tvMonth.text = it
+                    }
+                }
+                launch {
+                    viewModel.currentDay.collect {
+                        binding.tvToolBarDate.text = it
+                    }
+                }
+                launch {
+                    viewModel.loading.collect {
+                        binding.progressBar.isVisible = it
+                    }
+                }
+                launch {
+                    viewModel.uiEvent.collect {
+                        when (it) {
+                            is ScheduleFragmentViewModel.UiEvent.Error -> {
+                                Toast.makeText(
+                                    requireContext(),
+                                    it.message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-        if(teacherId == 0){
-            viewModel.loadScheduleByPositionAndGroupId(WeeksAdapter.START_POSITION, groupId)
+    private fun setUpToolBar() {
+        if (teacherId == -1) {
+            binding.tvToolbarGroupName.text = "$groupName ↓"
         } else {
-            viewModel.loadScheduleByPositionAndTeacherId(WeeksAdapter.START_POSITION, teacherId)
+            binding.tvToolbarGroupName.text = "$teacherName ↓"
         }
 
+        binding.tvToolbarGroupName.setOnClickListener {
+            val popupMenu = PopupMenu(requireContext(), it)
+            popupMenu.menuInflater.inflate(R.menu.schedule_menu, popupMenu.menu)
+            popupMenu.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.findNewGroup -> {
+                        prefs.edit {
+                            putInt(ChooseScheduleFragment.PREFS_GROUP_ID_KEY, -1)
+                            putString(ChooseScheduleFragment.PREFS_GROUP_NAME_KEY, "")
+                            putInt(ChooseScheduleFragment.PREFS_TEACHER_ID_KEY, -1)
+                            putString(ChooseScheduleFragment.PREFS_TEACHER_NAME_KEY, "")
+                        }
+                        findNavController().popBackStack()
+                        true
+                    }
 
-        val layoutManager = binding.rvWeek.layoutManager as LinearLayoutManager
+                    else -> false
+                }
+            }
+            popupMenu.show()
+        }
+    }
 
+    private fun setOnWeekScrollListener() {
         binding.rvWeek.addOnScrollListener(object : OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
@@ -151,10 +231,11 @@ class ScheduleFragment : Fragment() {
                     viewModel.onWeekScrolled(firstVisiblePosition, groupId, teacherId)
                     binding.tvToolBarDate.text = ""
                 }
-
             }
         })
+    }
 
+    private fun setOnWeekdayClickListener() {
         weeksAdapter.onWeekdayClickListener = object : WeeksAdapter.OnWeekdayClickListener {
             override fun onWeekdayClick(dayOfWeek: Int) {
                 val position = layoutManager.findFirstVisibleItemPosition()
@@ -162,47 +243,6 @@ class ScheduleFragment : Fragment() {
                 viewModel.onDaySelected(position, dayOfWeek)
                 weeksAdapter.selectedDayIndex = Pair(position, dayOfWeek)
             }
-        }
-
-        if(teacherId == 0){
-            binding.tvToolbarGroupName.text = "$groupName ↓"
-        } else {
-            binding.tvToolbarGroupName.text = "$teacherName ↓"
-        }
-
-        binding.tvToolbarGroupName.setOnClickListener {
-            val popupMenu = PopupMenu(requireContext(), it)
-            popupMenu.menuInflater.inflate(R.menu.schedule_menu, popupMenu.menu)
-            popupMenu.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.findNewGroup -> {
-                        prefs.edit { putInt(ChooseScheduleFragment.PREFS_GROUP_ID_KEY, -1) }
-                        findNavController().popBackStack()
-                        true
-                    }
-                    else -> false
-                }
-            }
-            popupMenu.show()
-        }
-    }
-
-    private fun observeLiveData() {
-        viewModel.lessons.observe(viewLifecycleOwner) {
-            lessonsAdapter.submitList(it)
-            showNoLessonsText(it.isEmpty())
-        }
-        viewModel.currentYear.observe(viewLifecycleOwner) {
-            binding.tvYear.text = it
-        }
-        viewModel.currentMonth.observe(viewLifecycleOwner) {
-            binding.tvMonth.text = it
-        }
-        viewModel.days.observe(viewLifecycleOwner) {
-            currentDays = it
-        }
-        viewModel.currentDay.observe(viewLifecycleOwner){
-            binding.tvToolBarDate.text = it
         }
     }
 
@@ -236,7 +276,6 @@ class ScheduleFragment : Fragment() {
     }
 
     private fun requestNotificationPermission() {
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val permissionGranted = (ContextCompat.checkSelfPermission(
                 requireActivity(),
@@ -250,12 +289,12 @@ class ScheduleFragment : Fragment() {
 
             if (permissionGranted) {
                 // Do your task on permission granted
-            } else if(dontShowAgain){
+            } else if (dontShowAgain) {
                 // Skip
             } else {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
                     showExplainDialog()
-                } else{
+                } else {
                     // Directly ask for the permission
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
@@ -272,7 +311,7 @@ class ScheduleFragment : Fragment() {
             .setPositiveButton("Ок") { _, _ ->
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
-            .setNeutralButton("Не показывать снова"){dialog,_ ->
+            .setNeutralButton("Не показывать снова") { dialog, _ ->
                 prefs.edit { putBoolean(NOTIFICATION_PREFS_KEY, true) }
                 dialog.dismiss()
             }
@@ -282,7 +321,6 @@ class ScheduleFragment : Fragment() {
             .create()
             .show()
     }
-
 
 
     private fun showSettingsDialog() {
@@ -296,7 +334,7 @@ class ScheduleFragment : Fragment() {
                     }
                 startActivity(intent)
             }
-            .setNeutralButton("Не показывать снова"){dialog,_ ->
+            .setNeutralButton("Не показывать снова") { dialog, _ ->
                 prefs.edit { putBoolean(NOTIFICATION_PREFS_KEY, true) }
                 dialog.dismiss()
             }

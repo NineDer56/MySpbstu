@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Toast
 import androidx.core.content.edit
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -217,7 +218,7 @@ class ChooseScheduleFragment : Fragment() {
                 }
                 launch {
                     viewModel.loading.collect {
-                        binding.progressBar.visibility = if (it) View.VISIBLE else View.GONE
+                        binding.progressBar.isVisible = it
                     }
                 }
                 launch {
