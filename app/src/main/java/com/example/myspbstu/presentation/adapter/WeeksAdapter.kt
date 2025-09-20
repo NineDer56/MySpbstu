@@ -25,7 +25,7 @@ class WeeksAdapter : RecyclerView.Adapter<WeeksAdapter.WeekViewHolder>() {
         }
 
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeeksAdapter.WeekViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeekViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
             R.layout.week_item,
             parent,
@@ -34,7 +34,7 @@ class WeeksAdapter : RecyclerView.Adapter<WeeksAdapter.WeekViewHolder>() {
         return WeekViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: WeeksAdapter.WeekViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: WeekViewHolder, position: Int) {
         val weekOffset = position - START_POSITION
         val monday = LocalDate.now()
             .with(DayOfWeek.MONDAY)

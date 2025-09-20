@@ -37,18 +37,17 @@ class ScheduleFragmentViewModel @Inject constructor(
     val lessons = _lessons.asStateFlow()
 
     private var _days = MutableStateFlow<List<Day>>(emptyList())
-    val days = _days.asStateFlow()
 
-    private var _currentYear = MutableStateFlow<String>("")
+    private var _currentYear = MutableStateFlow("")
     val currentYear = _currentYear.asStateFlow()
 
-    private var _currentMonth = MutableStateFlow<String>("")
+    private var _currentMonth = MutableStateFlow("")
     val currentMonth = _currentMonth.asStateFlow()
 
-    private var _currentDay = MutableStateFlow<String>("")
+    private var _currentDay = MutableStateFlow("")
     val currentDay = _currentDay.asStateFlow()
 
-    private var _loading = MutableStateFlow<Boolean>(false)
+    private var _loading = MutableStateFlow(false)
     val loading = _loading.asStateFlow()
 
     private var _uiEvent = MutableSharedFlow<UiEvent>(
@@ -74,7 +73,7 @@ class ScheduleFragmentViewModel @Inject constructor(
     }
 
     fun onDaySelected(position: Int, dayOfWeek: Int) {
-        val curLessons = days.value.find { it.weekday == dayOfWeek + 1 }?.lessons
+        val curLessons = _days.value.find { it.weekday == dayOfWeek + 1 }?.lessons
         _lessons.value = curLessons.orEmpty()
 
         val date = WeeksAdapter.getDateOfMondayByPosition(position)
@@ -170,11 +169,11 @@ class ScheduleFragmentViewModel @Inject constructor(
         workManager.enqueueUniqueWork(
             name,
             ExistingWorkPolicy.KEEP,
-            ExamWorker.makeRequest(typeOfExam, subject, time, delay.toLong())
+            ExamWorker.makeRequest(typeOfExam, subject, time, delay)
         )
         Log.d(
             "MyDebug",
-            "Создано уведомление $typeOfExam, $subject, $time, через $delay, сейчас ${now}"
+            "Создано уведомление $typeOfExam, $subject, $time, через $delay, сейчас $now"
         )
     }
 

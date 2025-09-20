@@ -36,8 +36,8 @@ class GroupsAdapter : ListAdapter<Group, GroupsAdapter.GroupViewHolder>(GroupsDi
     }
 
     class GroupViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
-        val tvGroupName = itemView.findViewById<TextView>(R.id.tv_group_name)
-        val tvFacultyName = itemView.findViewById<TextView>(R.id.tv_faculty_name)
+        val tvGroupName : TextView = itemView.findViewById(R.id.tv_group_name)
+        val tvFacultyName : TextView = itemView.findViewById(R.id.tv_faculty_name)
     }
 
     interface OnGroupClickListener{

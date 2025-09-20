@@ -36,11 +36,11 @@ class LessonsAdapter : ListAdapter<Lesson, LessonsAdapter.LessonViewHolder>(Less
 
 
     class LessonViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView){
-        val tvLessonOrder = itemView.findViewById<TextView>(R.id.tv_lesson_order)
-        val tvLessonTime = itemView.findViewById<TextView>(R.id.tv_lesson_time)
-        val tvBuilding = itemView.findViewById<TextView>(R.id.tv_building)
-        val tvLessonName = itemView.findViewById<TextView>(R.id.tv_lesson_name)
-        val tvLessonType = itemView.findViewById<TextView>(R.id.tv_lesson_type)
-        val tvLessonTeacher = itemView.findViewById<TextView>(R.id.tv_lesson_teacher)
+        val tvLessonOrder : TextView = itemView.findViewById(R.id.tv_lesson_order)
+        val tvLessonTime : TextView = itemView.findViewById(R.id.tv_lesson_time)
+        val tvBuilding : TextView = itemView.findViewById(R.id.tv_building)
+        val tvLessonName : TextView = itemView.findViewById(R.id.tv_lesson_name)
+        val tvLessonType : TextView = itemView.findViewById(R.id.tv_lesson_type)
+        val tvLessonTeacher : TextView = itemView.findViewById(R.id.tv_lesson_teacher)
     }
 }

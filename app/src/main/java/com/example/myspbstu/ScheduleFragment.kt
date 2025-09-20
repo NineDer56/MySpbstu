@@ -52,7 +52,7 @@ class ScheduleFragment : Fragment() {
         ViewModelProvider(this, viewModelFactory)[ScheduleFragmentViewModel::class.java]
     }
 
-    val args: ScheduleFragmentArgs by navArgs()
+    private val args: ScheduleFragmentArgs by navArgs()
 
     private var _binding: FragmentScheduleBinding? = null
     val binding: FragmentScheduleBinding
@@ -66,24 +66,11 @@ class ScheduleFragment : Fragment() {
         WeeksAdapter()
     }
 
-    private val groupId: Int by lazy {
-        args.groupId
-    }
-
-    private val groupName: String by lazy {
-        args.groupName
-    }
-
-    private val teacherId: Int by lazy {
-        args.teacherId
-    }
-
-    private val teacherName: String by lazy {
-        args.teacherName
-    }
-
     private val prefs by lazy {
-        requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        requireActivity().getSharedPreferences(
+            ChooseScheduleFragment.PREFS_FILE,
+            Context.MODE_PRIVATE
+        )
     }
 
     private val snapHelper by lazy { PagerSnapHelper() }
@@ -124,7 +111,7 @@ class ScheduleFragment : Fragment() {
 
     private fun loadDateAndSchedule() {
         binding.tvNoLessons.visibility = View.VISIBLE
-        viewModel.onWeekScrolled(WeeksAdapter.START_POSITION, groupId, teacherId)
+        viewModel.onWeekScrolled(WeeksAdapter.START_POSITION, args.groupId, args.teacherId)
     }
 
     private fun setUpRecyclerViews() {
@@ -188,10 +175,10 @@ class ScheduleFragment : Fragment() {
     }
 
     private fun setUpToolBar() {
-        if (teacherId == -1) {
-            binding.tvToolbarGroupName.text = "$groupName ↓"
+        if (args.teacherId == ChooseScheduleFragment.PREFS_TEACHER_ID_NOT_FOUND) {
+            binding.tvToolbarGroupName.text = "${args.groupName} ↓"
         } else {
-            binding.tvToolbarGroupName.text = "$teacherName ↓"
+            binding.tvToolbarGroupName.text = "${args.teacherName} ↓"
         }
 
         binding.tvToolbarGroupName.setOnClickListener {
@@ -199,12 +186,24 @@ class ScheduleFragment : Fragment() {
             popupMenu.menuInflater.inflate(R.menu.schedule_menu, popupMenu.menu)
             popupMenu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
-                    R.id.findNewGroup -> {
+                    R.id.findNewSchedule -> {
                         prefs.edit {
-                            putInt(ChooseScheduleFragment.PREFS_GROUP_ID_KEY, -1)
-                            putString(ChooseScheduleFragment.PREFS_GROUP_NAME_KEY, "")
-                            putInt(ChooseScheduleFragment.PREFS_TEACHER_ID_KEY, -1)
-                            putString(ChooseScheduleFragment.PREFS_TEACHER_NAME_KEY, "")
+                            putInt(
+                                ChooseScheduleFragment.PREFS_GROUP_ID_KEY,
+                                ChooseScheduleFragment.PREFS_GROUP_ID_NOT_FOUND
+                            )
+                            putString(
+                                ChooseScheduleFragment.PREFS_GROUP_NAME_KEY,
+                                ChooseScheduleFragment.PREFS_GROUP_NAME_NOT_FOUND
+                            )
+                            putInt(
+                                ChooseScheduleFragment.PREFS_TEACHER_ID_KEY,
+                                ChooseScheduleFragment.PREFS_TEACHER_ID_NOT_FOUND
+                            )
+                            putString(
+                                ChooseScheduleFragment.PREFS_TEACHER_NAME_KEY,
+                                ChooseScheduleFragment.PREFS_TEACHER_NAME_NOT_FOUND
+                            )
                         }
                         findNavController().popBackStack()
                         true
@@ -228,7 +227,7 @@ class ScheduleFragment : Fragment() {
                     viewModel.clearLessons()
                     weeksAdapter.selectedDayIndex = Pair(-1, -1)
 
-                    viewModel.onWeekScrolled(firstVisiblePosition, groupId, teacherId)
+                    viewModel.onWeekScrolled(firstVisiblePosition, args.groupId, args.teacherId)
                     binding.tvToolBarDate.text = ""
                 }
             }
@@ -269,8 +268,11 @@ class ScheduleFragment : Fragment() {
             if (!shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
                 showSettingsDialog()
             } else {
-                Toast.makeText(requireActivity(), "Разрешение не предоставлено", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(
+                    requireActivity(),
+                    getString(R.string.permission_not_granted),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -283,7 +285,7 @@ class ScheduleFragment : Fragment() {
             ) == PackageManager.PERMISSION_GRANTED)
 
             val dontShowAgain = prefs.getBoolean(
-                NOTIFICATION_PREFS_KEY,
+                PREFS_DONT_SHOW_NOTIF_PERM_DIALOG,
                 false
             )
 
@@ -306,16 +308,16 @@ class ScheduleFragment : Fragment() {
 
     private fun showExplainDialog() {
         AlertDialog.Builder(requireActivity())
-            .setTitle("Разрешения на уведомления")
-            .setMessage("Чтобы получать напоминания об экзаменах, пожалуйста, разрешите показ уведомлений.")
-            .setPositiveButton("Ок") { _, _ ->
+            .setTitle(getString(R.string.notification_premission))
+            .setMessage(getString(R.string.please_grant_the_permission))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
-            .setNeutralButton("Не показывать снова") { dialog, _ ->
-                prefs.edit { putBoolean(NOTIFICATION_PREFS_KEY, true) }
+            .setNeutralButton(getString(R.string.dont_show_again)) { dialog, _ ->
+                prefs.edit { putBoolean(PREFS_DONT_SHOW_NOTIF_PERM_DIALOG, true) }
                 dialog.dismiss()
             }
-            .setNegativeButton("Нет, спасибо") { dialog, _ ->
+            .setNegativeButton(getString(R.string.no_thanks)) { dialog, _ ->
                 dialog.dismiss()
             }
             .create()
@@ -325,17 +327,17 @@ class ScheduleFragment : Fragment() {
 
     private fun showSettingsDialog() {
         AlertDialog.Builder(requireActivity())
-            .setTitle("Разрешение отклонено")
-            .setMessage("Вы запретили показ уведомлений. Чтобы включить их, перейдите в настройки приложения.")
-            .setPositiveButton("Открыть настройки") { _, _ ->
+            .setTitle(getString(R.string.permission_denied))
+            .setMessage(getString(R.string.you_denied_permission_go_to_settings))
+            .setPositiveButton(getString(R.string.open_settings)) { _, _ ->
                 val intent =
                     Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = ("package:${requireActivity().packageName}").toUri()
                     }
                 startActivity(intent)
             }
-            .setNeutralButton("Не показывать снова") { dialog, _ ->
-                prefs.edit { putBoolean(NOTIFICATION_PREFS_KEY, true) }
+            .setNeutralButton(getString(R.string.dont_show_again)) { dialog, _ ->
+                prefs.edit { putBoolean(PREFS_DONT_SHOW_NOTIF_PERM_DIALOG, true) }
                 dialog.dismiss()
             }
             .create()
@@ -349,6 +351,6 @@ class ScheduleFragment : Fragment() {
     }
 
     companion object {
-        private const val NOTIFICATION_PREFS_KEY = "dontShowNotificationPermissionDialog"
+        private const val PREFS_DONT_SHOW_NOTIF_PERM_DIALOG = "dontShowNotificationPermissionDialog"
     }
 }

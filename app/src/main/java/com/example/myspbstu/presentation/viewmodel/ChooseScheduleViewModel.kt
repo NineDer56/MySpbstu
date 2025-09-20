@@ -29,7 +29,7 @@ class ChooseScheduleViewModel @Inject constructor(
     private var _teachers = MutableStateFlow<List<Teacher>>(emptyList())
     val teachers = _teachers.asStateFlow()
 
-    private var _loading = MutableStateFlow<Boolean>(false)
+    private var _loading = MutableStateFlow(false)
     val loading = _loading.asStateFlow()
 
     private var _uiEvent = MutableSharedFlow<UiEvent>(

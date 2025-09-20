@@ -36,8 +36,8 @@ class TeachersAdapter : ListAdapter<Teacher, TeachersAdapter.TeacherViewHolder>(
     }
 
     class TeacherViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView){
-        val tvTeacherName = itemView.findViewById<TextView>(R.id.tv_teacher_name)
-        val tvTeacherChair = itemView.findViewById<TextView>(R.id.tv_teacher_chair)
+        val tvTeacherName : TextView = itemView.findViewById(R.id.tv_teacher_name)
+        val tvTeacherChair : TextView = itemView.findViewById(R.id.tv_teacher_chair)
     }
 
     interface OnTeacherClickListener{
