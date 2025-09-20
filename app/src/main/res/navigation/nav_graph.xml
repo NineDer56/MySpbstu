@@ -21,7 +21,7 @@
         tools:layout="@layout/fragment_schedule" >
         <argument
             android:name="groupId"
-            android:defaultValue="0"
+            android:defaultValue="-1"
             app:argType="integer" />
         <argument
             android:name="groupName"
@@ -29,7 +29,7 @@
             app:argType="string" />
         <argument
             android:name="teacherId"
-            android:defaultValue="0"
+            android:defaultValue="-1"
             app:argType="integer" />
         <argument
             android:name="teacherName"

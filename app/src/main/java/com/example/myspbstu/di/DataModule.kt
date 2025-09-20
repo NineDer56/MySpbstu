@@ -7,6 +7,8 @@ import com.example.myspbstu.domain.repository.ScheduleRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 @Module
 interface DataModule {
@@ -21,6 +23,12 @@ interface DataModule {
         @Provides
         fun provideScheduleApiService() : ScheduleApiService{
             return ScheduleApiFactory.scheduleApiService
+        }
+
+        @IoDispatcher
+        @Provides
+        fun provideDispatcherIo() : CoroutineDispatcher{
+            return Dispatchers.IO
         }
     }
 }

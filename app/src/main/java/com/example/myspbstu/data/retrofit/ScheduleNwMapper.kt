@@ -31,7 +31,7 @@ class ScheduleNwMapper @Inject constructor() {
         )
     }
 
-    fun mapWeekNwModelToEntity(nwModel: WeekNwModel) : Week {
+    private fun mapWeekNwModelToEntity(nwModel: WeekNwModel) : Week {
         return Week(
             dateStart = nwModel.dateStart,
             dateEnd = nwModel.dateEnd,
@@ -39,7 +39,7 @@ class ScheduleNwMapper @Inject constructor() {
         )
     }
 
-    fun mapDayNwModelToEntity(nwModel: DayNwModel) : Day{
+    private fun mapDayNwModelToEntity(nwModel: DayNwModel) : Day{
         return Day(
             weekday = nwModel.weekday,
             date = nwModel.date,
@@ -47,7 +47,7 @@ class ScheduleNwMapper @Inject constructor() {
         )
     }
 
-    fun mapLessonNwModelToEntity(nwModel: LessonNwModel) : Lesson {
+    private fun mapLessonNwModelToEntity(nwModel: LessonNwModel) : Lesson {
         return Lesson(
             subject = nwModel.subject,
             timeStart = nwModel.timeStart,
@@ -59,7 +59,7 @@ class ScheduleNwMapper @Inject constructor() {
         )
     }
 
-    fun mapLessonTypeNwModelToEntity(nwModel: LessonTypeNwModel) : LessonType{
+    private fun mapLessonTypeNwModelToEntity(nwModel: LessonTypeNwModel) : LessonType{
         return LessonType(
             id = nwModel.id,
             name = nwModel.name,
@@ -76,7 +76,7 @@ class ScheduleNwMapper @Inject constructor() {
         )
     }
 
-    fun mapLessonTypeNwModelToEntity(nwModel: FacultyNwModel) : Faculty{
+    private fun mapLessonTypeNwModelToEntity(nwModel: FacultyNwModel) : Faculty{
         return Faculty(
             id = nwModel.id,
             name = nwModel.name,
@@ -92,7 +92,7 @@ class ScheduleNwMapper @Inject constructor() {
         )
     }
 
-    fun mapAuditoryNwModelToEntity(nwModel: AuditoryNwModel) : Auditory{
+    private fun mapAuditoryNwModelToEntity(nwModel: AuditoryNwModel) : Auditory{
         return Auditory(
             id = nwModel.id,
             name = nwModel.name,
@@ -100,7 +100,7 @@ class ScheduleNwMapper @Inject constructor() {
         )
     }
 
-    fun mapBuildingNwModelToEntity(nwModel: BuildingNwModel) : Building{
+    private fun mapBuildingNwModelToEntity(nwModel: BuildingNwModel) : Building{
         return Building(
             id = nwModel.id,
             name = nwModel.name,
