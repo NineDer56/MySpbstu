@@ -14,7 +14,7 @@
 ## 🧱 Архитектура
 
 - MVVM + Clean Architecture
-- LiveData, ViewModel
+- Coroutines Flow
 - Retrofit (загрузка расписания)
 - SafeArgs + Navigation
 - RecyclerView + SnapHelper
