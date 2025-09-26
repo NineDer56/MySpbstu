@@ -78,10 +78,10 @@ class ChooseScheduleFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         checkSharedPreferences()
+        setSpinnerItemSelectedListener()
         setOnGroupClickListener()
         setOnTeacherClickListeners()
         collectFlow()
-        setSpinnerItemSelectedListener()
         setOnClickListeners()
     }
 
@@ -183,7 +183,6 @@ class ChooseScheduleFragment : Fragment() {
     }
 
     private fun setSpinnerItemSelectedListener() {
-        binding.spinnerSelectionOptions.setSelection(GROUP_SPINNER_POSITION, false)
         binding.spinnerSelectionOptions.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -211,6 +210,7 @@ class ChooseScheduleFragment : Fragment() {
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
+        binding.spinnerSelectionOptions.setSelection(GROUP_SPINNER_POSITION, false)
     }
 
     private fun setOnClickListeners() {
@@ -264,7 +264,7 @@ class ChooseScheduleFragment : Fragment() {
     }
 
     companion object {
-        const val PREFS_FILE = "app_prefs"
+        const val PREFS_FILE = "spbstu_app_prefs"
 
         const val PREFS_GROUP_ID_KEY = "sharedPreferencesGroupIdKey"
         const val PREFS_GROUP_NAME_KEY = "sharedPreferencesGroupNameKey"
